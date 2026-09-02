@@ -33,7 +33,7 @@ def test_chat_returns_answer_and_generates_conv_id():
     assert body["response"] == "收到：你好"
     assert len(body["conv_id"]) == 12
     assert body["latency_ms"] >= 0
-    assert "system" in fake.calls[0]  # 确认系统提示词确实传给了模型
+    assert "system" in fake.calls[-1]  # 最后一次调用是回复生成，确认系统提示词传给了模型
 
 
 def test_chat_keeps_existing_conv_id():
@@ -41,3 +41,15 @@ def test_chat_keeps_existing_conv_id():
         "/chat", json={"message": "在吗", "conv_id": "abc"}
     ).json()
     assert body["conv_id"] == "abc"
+
+
+def test_chat_exposes_intent_fields():
+    # FakeLLM 返回的不是 JSON，LLM 那一票解析失败，所以结论应当来自规则路
+    body = make_client(FakeLLM()).post(
+        "/chat", json={"message": "我要退款，订单号 #A12345，尽快"}
+    ).json()
+    assert body["intent"] == "refund"
+    assert body["intent_group"] == "billing"
+    assert body["intent_source"] == "rule"
+    assert body["urgency"] == "HIGH"
+    assert body["entities"]["order_id"] == ["A12345"]
