@@ -43,11 +43,10 @@ def _params(required: list[str], **props: str) -> dict[str, Any]:
 
 def get_order_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
     order = store.get_order(args["order_id"])
-    if order is None:
-        return {"found": False, "message": f"未找到订单 {args['order_id']}，请用户核对订单号"}
-    if order["user_id"] != ctx.user_id:
-        # 越权保护：只能查自己的订单。不透露订单是否存在。
-        return {"found": False, "message": "该订单不属于当前用户，无法查询"}
+    # 越权保护：只能查自己的订单。
+    # "订单不存在"和"订单是别人的"必须返回完全相同的内容，否则攻击者可以靠回复的差异来探测哪些订单号真实存在。
+    if order is None or order["user_id"] != ctx.user_id:
+        return {"found": False, "message": f"在当前账号下未找到订单 {args['order_id']}，请核对订单号，或确认是否用其他账号下的单"}
     return {"found": True, **{k: order[k] for k in ("item", "amount", "status", "paid_at", "shipped_at", "logistics")}}
 
 

@@ -13,9 +13,12 @@ def test_order_status_found():
     assert r["found"] and r["status"] == "运输中"
 
 
-def test_order_of_other_user_is_hidden():
-    r = call("get_order_status", U2, order_id="A12345")
-    assert r["found"] is False and "不属于" in r["message"]
+def test_other_users_order_is_indistinguishable_from_missing_order():
+    someone_elses = call("get_order_status", U2, order_id="A12345")
+    nonexistent = call("get_order_status", U2, order_id="Z99999")
+    assert someone_elses["found"] is False and nonexistent["found"] is False
+    # 两种情况的回复除订单号外必须一致，不能泄露"这个订单号真实存在"
+    assert someone_elses["message"].replace("A12345", "") == nonexistent["message"].replace("Z99999", "")
 
 
 def test_payment_records_show_two_successful_charges():

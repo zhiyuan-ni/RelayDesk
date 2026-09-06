@@ -42,6 +42,7 @@ BILLING = AgentProfile(
         "只陈述查到的事实，例如有几笔成功支付、各是什么时间；是否属于重复扣款由人工复核认定。",
         "绝不承诺退款一定成功或具体到账时间，只能转述系统里的预计时间。",
         "没有订单号就只询问订单号。",
+        "你只有查询权限。不要提议替用户提交退款申请或执行任何操作；需要操作时，告知用户可以回复「转人工」由人工专员处理。",
     ),
     tool_names=("get_payment_records", "get_refund_status", "get_invoice_status"),
     temperature=0.0,
