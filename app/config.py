@@ -20,6 +20,8 @@ class Settings:
     # 部分模型（如 Qwen3 系列）默认每次回答前先做一段隐藏思考，客服场景下既慢又费 token。
     # None 表示不干预，True/False 表示显式开关。不是所有模型都认这个参数，所以默认不发送。
     llm_enable_thinking: Optional[bool] = None
+    embedding_model: str = "text-embedding-v4"
+    kb_path: str = "data/chroma"   # 向量库的本地存储目录，已在 .gitignore 里
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -37,6 +39,8 @@ def load_settings() -> Settings:
         llm_base_url=os.getenv("LLM_BASE_URL", "https://aihubmix.com/v1").strip(),
         llm_model=os.getenv("LLM_MODEL", "gpt-4o-mini").strip(),
         llm_enable_thinking=_optional_bool("LLM_ENABLE_THINKING"),
+        embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-v4").strip(),
+        kb_path=os.getenv("KB_PATH", "data/chroma").strip(),
     )
 
 
