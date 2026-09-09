@@ -57,14 +57,19 @@ async def test_ingest_real_docs(tmp_path):
     assert await kb.ingest_dir() >= 18 and await kb.count() >= 18
 
 
+async def make_retriever(tmp_path):
+    from app.knowledge.retriever import Retriever
+    return Retriever(await make_kb(tmp_path), llm=None, rewrite=False, rerank=False)   # 纯向量模式，不需要模型
+
+
 async def test_async_tool_runs_through_execute_tool_call(tmp_path):
-    tool = build_knowledge_tool(await make_kb(tmp_path))
+    tool = build_knowledge_tool(await make_retriever(tmp_path))
     trace = await execute_tool_call({tool.name: tool}, TOOL_NAME, '{"query": "运费多少"}', ToolContext("u1001"))
     assert trace["success"] and trace["data"]["found"] and trace["data"]["results"][0]["title"] == "配送说明"
 
 
 async def test_shared_tool_is_added_on_top_of_whitelist(tmp_path):
-    tool = build_knowledge_tool(await make_kb(tmp_path))
+    tool = build_knowledge_tool(await make_retriever(tmp_path))
     profile = AgentProfile("technical", "技术支持", ("规则",), ("lookup_error_code",))
     agent = BaseAgent(None, profile, shared_tools={tool.name: tool})
     assert set(agent._tools) == {"lookup_error_code", TOOL_NAME}

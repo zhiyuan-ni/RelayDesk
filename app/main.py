@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from app.config import settings
 from app.knowledge.embedder import Embedder
 from app.knowledge.kb import KnowledgeBase
+from app.knowledge.retriever import Retriever
 from app.knowledge.tool import build_knowledge_tool
 from app.llm import LLMClient
 from app.orchestrator import Orchestrator
@@ -28,10 +29,13 @@ async def lifespan(app: FastAPI):
         # 让启动直接失败并给出可读的原因，好过带着坏配置运行
         raise RuntimeError(f"知识库初始化失败，请检查 EMBEDDING_MODEL={settings.embedding_model!r} 是否正确: {ex}") from ex
     logger.info("知识库就绪: %s, 片段数 %d, 向量模型 %s", state, await kb.count(), settings.embedding_model)
-    tool = build_knowledge_tool(kb)
+    llm = LLMClient(settings)
+    retriever = Retriever(kb, llm, rewrite=settings.retrieval_rewrite, rerank=settings.retrieval_rerank)
+    tool = build_knowledge_tool(retriever)
 
     app.state.kb = kb
-    app.state.orchestrator = Orchestrator(LLMClient(settings), shared_tools={tool.name: tool})
+    app.state.retriever = retriever
+    app.state.orchestrator = Orchestrator(llm, shared_tools={tool.name: tool})
     yield
 
 
@@ -78,14 +82,17 @@ async def health():
 
 
 @app.post("/search")
-async def search(query: str, top_k: int = 4, request: Request = None):
-    """直接查看知识库检索结果，调试检索质量用。"""
+async def search(query: str, top_k: int = 4, enhanced: bool = True, request: Request = None):
+    """查看检索结果，调试检索质量用。enhanced=false 时只做纯向量检索，方便对比改写和重排的效果。"""
     try:
-        results = await request.app.state.kb.search(query, top_k)
+        if not enhanced:
+            return {"query": query, "mode": "vector_only", "results": await request.app.state.kb.search(query, top_k)}
+        r = await request.app.state.retriever.retrieve(query, top_k)
     except Exception as ex:
         # 502 表示"我依赖的上游服务出错了"，比笼统的 500 更准确，错误原因也一并返回
-        raise HTTPException(status_code=502, detail=f"向量检索失败: {ex}") from ex
-    return {"query": query, "results": results}
+        raise HTTPException(status_code=502, detail=f"检索失败: {ex}") from ex
+    return {"query": query, "mode": "enhanced", "queries": r.queries, "n_candidates": r.n_candidates,
+            "reranked": r.reranked, "latency_ms": r.latency_ms, "results": r.hits}
 
 
 @app.post("/chat", response_model=ChatResponse)

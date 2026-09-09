@@ -22,6 +22,9 @@ class Settings:
     llm_enable_thinking: Optional[bool] = None
     embedding_model: str = "text-embedding-v4"
     kb_path: str = "data/chroma"   # 向量库的本地存储目录，已在 .gitignore 里
+    # 检索增强开关。依据 scripts/compare_retrieval.py 的实测结果设定默认值，见该脚本
+    retrieval_rerank: bool = True
+    retrieval_rewrite: bool = False
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -41,6 +44,8 @@ def load_settings() -> Settings:
         llm_enable_thinking=_optional_bool("LLM_ENABLE_THINKING"),
         embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-v4").strip(),
         kb_path=os.getenv("KB_PATH", "data/chroma").strip(),
+        retrieval_rerank=_optional_bool("RETRIEVAL_RERANK") is not False,    # 未设置时为 True
+        retrieval_rewrite=_optional_bool("RETRIEVAL_REWRITE") is True,       # 未设置时为 False
     )
 
 
