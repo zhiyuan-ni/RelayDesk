@@ -25,6 +25,12 @@ class Settings:
     # 检索增强开关。依据 scripts/compare_retrieval.py 的实测结果设定默认值，见该脚本
     retrieval_rerank: bool = True
     retrieval_rewrite: bool = False
+    # 知识库工具的保护参数
+    kb_timeout_s: float = 8.0          # 整次检索的总时限
+    kb_rerank_timeout_s: float = 4.0   # 其中重排一步的时限，必须小于总时限
+    kb_cache_ttl_s: float = 300.0      # 相同问题 5 分钟内不重复检索
+    kb_breaker_failures: int = 3       # 连续失败 3 次后熔断
+    kb_breaker_recovery_s: float = 30.0
 
 
 def _optional_bool(name: str) -> Optional[bool]:

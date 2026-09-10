@@ -87,9 +87,12 @@ def apply_order(candidates: list[dict], order: list, top_k: int) -> list[dict]:
 
 
 class Retriever:
-    def __init__(self, kb, llm, rewrite: bool = True, rerank: bool = True):
+    def __init__(self, kb, llm, rewrite: bool = True, rerank: bool = True, rerank_timeout_s: float = 4.0):
         self._kb, self._llm = kb, llm
         self._rewrite_on, self._rerank_on = rewrite, rerank
+        # 分层超时：重排有自己的时限，比工具的总时限短。
+        # 重排慢了就放弃重排、用向量顺序，召回的结果不会因此作废。只有一个总超时的话，重排一慢就什么都拿不到。
+        self._rerank_timeout_s = rerank_timeout_s
 
     async def retrieve(self, query: str, top_k: int = 4) -> RetrievalResult:
         t0 = time.monotonic()
@@ -143,7 +146,8 @@ class Retriever:
             "只返回由片段序号组成的 JSON 数组，例如 [2, 0, 3]"
         )
         try:
-            raw = await self._llm.chat_text(prompt, temperature=0.0, max_tokens=100)
+            raw = await asyncio.wait_for(
+                self._llm.chat_text(prompt, temperature=0.0, max_tokens=100), timeout=self._rerank_timeout_s)
             return apply_order(candidates, parse_json_list(raw), top_k), True
         except Exception as ex:
             logger.warning("重排失败，使用向量顺序: %s", ex)
