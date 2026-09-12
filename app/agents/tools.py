@@ -5,7 +5,7 @@
 退款执行、改地址这类有副作用的操作不做成工具，统一走人工升级。
 """
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from app.business import store
 
@@ -15,6 +15,7 @@ class ToolContext:
     """工具执行时能看到的请求信息。模型给的参数不可全信，user_id 这类身份信息从这里取。"""
     user_id: str
     entities: dict[str, list[str]] = field(default_factory=dict)
+    conversation_text: str = ""   # 用户在本次会话里说过的全部内容，用来校验模型给的参数是不是凭空编的
 
 
 @dataclass(frozen=True)
@@ -39,9 +40,29 @@ def _params(required: list[str], **props: str) -> dict[str, Any]:
     }
 
 
+# ── 参数溯源 ─────────────────────────────────────────────────────────────────
+
+def _invented_order_id(ctx: ToolContext, order_id: str) -> Optional[dict[str, Any]]:
+    """订单号必须是用户亲口说过的。不是的话返回一条拒绝结果，是的话返回 None。
+
+    实测中出现过：用户只说"我好像被多扣钱了"，模型自己编了一个订单号去查。
+    如果编出来的号恰好是该用户的另一笔真实订单，它就会用错误订单的数据来回答。
+    Agent 的规则里写了"没有订单号就先询问"，模型没有遵守，所以在这里用代码兜住。
+    conversation_text 为空表示调用方没有提供会话内容，此时无从校验，放行。
+    """
+    if not ctx.conversation_text:
+        return None
+    normalized = order_id.strip().lstrip("#").upper()
+    if normalized and normalized in ctx.conversation_text.upper():
+        return None
+    return {"found": False, "message": f"订单号 {order_id} 不是用户提供的。不要猜测或编造订单号，请先向用户询问订单号。"}
+
+
 # ── 工具函数 ─────────────────────────────────────────────────────────────────
 
 def get_order_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
+    if (rejected := _invented_order_id(ctx, args["order_id"])) is not None:
+        return rejected
     order = store.get_order(args["order_id"])
     # 越权保护：只能查自己的订单。
     # "订单不存在"和"订单是别人的"必须返回完全相同的内容，否则攻击者可以靠回复的差异来探测哪些订单号真实存在。
@@ -51,6 +72,8 @@ def get_order_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_payment_records(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
+    if (rejected := _invented_order_id(ctx, args["order_id"])) is not None:
+        return rejected
     order = store.get_order(args["order_id"])
     if order is None or order["user_id"] != ctx.user_id:
         return {"found": False, "message": "未找到该用户名下的这笔订单"}
@@ -68,6 +91,8 @@ def get_payment_records(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any
 
 
 def get_refund_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
+    if (rejected := _invented_order_id(ctx, args["order_id"])) is not None:
+        return rejected
     order = store.get_order(args["order_id"])
     if order is None or order["user_id"] != ctx.user_id:
         return {"found": False, "message": "未找到该用户名下的这笔订单"}
@@ -76,6 +101,8 @@ def get_refund_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_invoice_status(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
+    if (rejected := _invented_order_id(ctx, args["order_id"])) is not None:
+        return rejected
     order = store.get_order(args["order_id"])
     if order is None or order["user_id"] != ctx.user_id:
         return {"found": False, "message": "未找到该用户名下的这笔订单"}

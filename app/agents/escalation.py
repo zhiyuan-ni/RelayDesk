@@ -15,7 +15,7 @@ from app.agents.tools import ToolContext
 class EscalationAgent:
     name = "escalation"
 
-    async def run(self, message: str, ctx: ToolContext, background: str = "") -> AgentReply:
+    async def run(self, message: str, ctx: ToolContext, background: str = "", history=None) -> AgentReply:
         ticket = "T" + uuid.uuid4().hex[:8].upper()
         known = {k: v for k, v in ctx.entities.items() if v}
         lines = [

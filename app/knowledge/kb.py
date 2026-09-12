@@ -15,6 +15,7 @@ from typing import Any
 import chromadb
 
 from app.knowledge.chunker import Chunk, chunk_markdown
+from app.knowledge.embedder import EmbeddingUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -39,22 +40,33 @@ class KnowledgeBase:
         )
 
     async def ensure_ready(self, docs_dir: Path = DOCS_DIR) -> str:
-        """服务启动时调用。返回 "reused" / "ingested" / "rebuilt"，说明这次做了什么。
+        """服务启动时调用。返回 "reused" / "ingested" / "rebuilt" / "unverified"，说明这次做了什么。
 
-        两个保护：
-          1. 快速失败。先用向量模型做一次探测调用，模型名配错、key 失效在启动时就报出来，
-             而不是潜伏到第一个用户请求。
-          2. 一致性。不同向量模型输出的维度和语义空间都不同，混用会直接报错或检索结果毫无意义。
-             建库时把模型名记在元数据里，发现和当前配置不一致就重建。
-             知识库的全部内容都来自 docs 目录，重建不会丢任何数据。
+        三个保护：
+          1. 配置错误快速失败。用向量模型做一次探测调用，模型名配错、密钥失效时抛
+             EmbeddingConfigError，让启动直接失败。这类错误重试没用，越早暴露越好。
+          2. 暂时不可用时不阻止启动。网络抖动、上游限流是会自己恢复的。只要本地向量库已经用
+             当前模型建好了，就返回 "unverified" 照常启动。检索工具自带超时和熔断，恢复前走降级即可。
+             向量库还是空的、或者需要重建时没有退路，只能把 EmbeddingUnavailable 继续向上抛。
+          3. 一致性。不同向量模型的维度和语义空间都不同，不能混用。建库时把模型名记在元数据里，
+             和当前配置不一致就重建。知识库内容全部来自 docs 目录，重建不会丢数据。
         """
-        await self._embedder.embed(["启动探测"])
-
+        count = await self.count()
         built_with = (self._col.metadata or {}).get("embedding_model")
-        if await self.count() == 0:
+        usable_as_is = count > 0 and built_with == self._embedder.model
+
+        try:
+            await self._embedder.embed(["启动探测"])
+        except EmbeddingUnavailable as ex:
+            if not usable_as_is:
+                raise
+            logger.warning("向量服务暂时不可用，沿用本地向量库启动，检索在恢复前会走降级: %s", ex)
+            return "unverified"
+
+        if count == 0:
             await self.ingest_dir(docs_dir)
             return "ingested"
-        if built_with != self._embedder.model:
+        if not usable_as_is:
             logger.warning("向量模型由 %s 变为 %s，重建知识库", built_with, self._embedder.model)
             await asyncio.to_thread(self._client.delete_collection, COLLECTION)
             self._col = await asyncio.to_thread(self._open_collection)

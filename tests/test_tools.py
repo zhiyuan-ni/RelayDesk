@@ -45,3 +45,16 @@ def test_pick_tools_is_a_whitelist():
     tools = pick_tools(("lookup_error_code", "get_login_events"))
     assert set(tools) == {"lookup_error_code", "get_login_events"}
     assert all(t.to_openai()["type"] == "function" for t in tools.values())
+
+
+def test_invented_order_id_is_rejected_before_any_lookup():
+    ctx = ToolContext("u1001", conversation_text="我好像被多扣钱了")
+    for name in ("get_order_status", "get_payment_records", "get_refund_status", "get_invoice_status"):
+        r = call(name, ctx, order_id="A12345")          # A12345 真实存在且属于该用户，但用户没提过
+        assert r["found"] is False and "不是用户提供的" in r["message"]
+
+
+def test_order_id_mentioned_by_user_is_accepted_in_any_form():
+    for said in ("查一下 #a12345", "订单号是A12345，麻烦了"):
+        r = call("get_order_status", ToolContext("u1001", conversation_text=said), order_id="A12345")
+        assert r["found"] is True

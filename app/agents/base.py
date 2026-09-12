@@ -109,12 +109,17 @@ class BaseAgent:
         # 工具 = 角色专属的白名单工具 + 所有 Agent 共享的工具，例如知识库检索
         self._tools = {**pick_tools(profile.tool_names), **(shared_tools or {})}
 
-    async def run(self, message: str, ctx: ToolContext, background: str = "") -> AgentReply:
-        """处理一条用户消息。background 是意图、实体、记忆等背景信息的文本。"""
+    async def run(self, message: str, ctx: ToolContext, background: str = "",
+                  history: Optional[list[dict[str, str]]] = None) -> AgentReply:
+        """处理一条用户消息。
+
+        background: 意图、实体、会话摘要等背景信息的文本
+        history:    本次会话最近几轮的原始对话，按时间顺序
+        """
         t0 = time.monotonic()
         traces: list[dict[str, Any]] = []
         try:
-            content = await self._loop(message, ctx, background, traces)
+            content = await self._loop(message, ctx, background, traces, history or [])
             ok = True
         except Exception as ex:
             logger.exception("%s agent 失败", self.profile.name)
@@ -122,11 +127,15 @@ class BaseAgent:
         return AgentReply(self.profile.name, content, ok,
                           round((time.monotonic() - t0) * 1000, 1), traces)
 
-    async def _loop(self, message: str, ctx: ToolContext, background: str, traces: list) -> str:
+    async def _loop(self, message: str, ctx: ToolContext, background: str, traces: list,
+                    history: list[dict[str, str]]) -> str:
         messages: list[dict[str, Any]] = []
         if background:
             messages.append({"role": "user", "content": f"[背景信息，供参考]\n{background}"})
             messages.append({"role": "assistant", "content": "好的，我已了解背景。"})
+        # 历史对话作为真正的多轮消息传入，而不是拼成一段文字。
+        # 模型对"谁说了什么"的理解，建立在 user 和 assistant 交替的消息结构上
+        messages.extend(history)
         messages.append({"role": "user", "content": message})
         tool_defs = [t.to_openai() for t in self._tools.values()]
 

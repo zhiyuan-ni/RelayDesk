@@ -31,6 +31,7 @@ class Settings:
     kb_cache_ttl_s: float = 300.0      # 相同问题 5 分钟内不重复检索
     kb_breaker_failures: int = 3       # 连续失败 3 次后熔断
     kb_breaker_recovery_s: float = 30.0
+    redis_url: str = "redis://localhost:6379/0"
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -50,6 +51,7 @@ def load_settings() -> Settings:
         llm_enable_thinking=_optional_bool("LLM_ENABLE_THINKING"),
         embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-v4").strip(),
         kb_path=os.getenv("KB_PATH", "data/chroma").strip(),
+        redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0").strip(),
         retrieval_rerank=_optional_bool("RETRIEVAL_RERANK") is not False,    # 未设置时为 True
         retrieval_rewrite=_optional_bool("RETRIEVAL_REWRITE") is True,       # 未设置时为 False
     )

@@ -1,6 +1,8 @@
 """知识库测试。用假的向量模型，不联网、不花钱，向量库建在临时目录里。"""
 import hashlib
 
+import pytest
+
 from app.agents.base import AgentProfile, BaseAgent, execute_tool_call
 from app.agents.tools import ToolContext
 from app.knowledge.chunker import Chunk
@@ -90,11 +92,28 @@ async def test_ensure_ready_rebuilds_when_embedding_model_changes(tmp_path):
     assert await KnowledgeBase(FakeEmbedder("fake-embed-b"), str(tmp_path)).ensure_ready() == "reused"
 
 
-async def test_ensure_ready_fails_fast_on_bad_embedding_config(tmp_path):
-    kb = KnowledgeBase(FakeEmbedder(error=ValueError("模型不存在")), str(tmp_path))
-    try:
+async def test_config_error_fails_fast_even_when_store_is_ready(tmp_path):
+    from app.knowledge.embedder import EmbeddingConfigError
+    await KnowledgeBase(FakeEmbedder(), str(tmp_path)).ensure_ready()
+    kb = KnowledgeBase(FakeEmbedder(error=EmbeddingConfigError("模型不存在")), str(tmp_path))
+    with pytest.raises(EmbeddingConfigError):
         await kb.ensure_ready()
-    except ValueError as ex:
-        assert "模型不存在" in str(ex)
-    else:
-        raise AssertionError("配置错误时应当在启动阶段就抛出")
+
+
+async def test_transient_outage_does_not_block_startup_when_store_is_ready(tmp_path):
+    from app.knowledge.embedder import EmbeddingUnavailable
+    await KnowledgeBase(FakeEmbedder(), str(tmp_path)).ensure_ready()
+    kb = KnowledgeBase(FakeEmbedder(error=EmbeddingUnavailable("网络不通")), str(tmp_path))
+    assert await kb.ensure_ready() == "unverified" and await kb.count() >= 18
+
+
+async def test_transient_outage_still_fails_when_there_is_nothing_to_fall_back_on(tmp_path):
+    from app.knowledge.embedder import EmbeddingUnavailable
+    empty = KnowledgeBase(FakeEmbedder(error=EmbeddingUnavailable("网络不通")), str(tmp_path / "empty"))
+    with pytest.raises(EmbeddingUnavailable):
+        await empty.ensure_ready()
+
+    await KnowledgeBase(FakeEmbedder("fake-embed-a"), str(tmp_path / "old")).ensure_ready()
+    needs_rebuild = KnowledgeBase(FakeEmbedder("fake-embed-b", error=EmbeddingUnavailable("网络不通")), str(tmp_path / "old"))
+    with pytest.raises(EmbeddingUnavailable):
+        await needs_rebuild.ensure_ready()
