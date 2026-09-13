@@ -66,10 +66,30 @@ def select_within_budget(messages: list[dict[str, Any]], max_chars: int) -> list
         used += size
     return picked[::-1]   # 收集时是从新到旧，翻转回时间顺序
 
+EPISODE_MAX_CHARS = 500
+RECALL_TIMEOUT_S = 3.0
+
+
+def build_episode_text(summary: str, messages: list[dict[str, Any]]) -> str:
+    """一个会话在长期记忆里的文本：摘要，加上用户最近说的原话。
+
+    只取用户的话，不取助手的回复。要记住的是"用户关心什么、提到过哪些订单"，
+    助手的长篇回复只会稀释语义，让检索变得不准。
+    """
+    said = "；".join(m["content"][:120] for m in messages if m["role"] == "user")
+    parts = [p for p in (summary.strip(), f"用户说过：{said}" if said else "") if p]
+    return "\n".join(parts)[:EPISODE_MAX_CHARS]
+
+
 class MemoryManager:
-    def __init__(self, store: ConversationStore, llm):
-        self._store, self._llm = store, llm
+    def __init__(self, store: ConversationStore, llm, longterm=None):
+        self._store, self._llm, self._longterm = store, llm, longterm
         self._tasks: set[asyncio.Task] = set()   # 持有后台任务的引用，否则任务可能还没跑完就被垃圾回收
+
+    def _in_background(self, coro) -> None:
+        task = asyncio.create_task(coro)
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
 
     async def load(self, user_id: str, conv_id: str) -> MemoryContext:
         messages, summary = await asyncio.gather(
@@ -81,10 +101,36 @@ class MemoryManager:
     async def save_turn(self, user_id: str, conv_id: str, user_msg: str, assistant_msg: str) -> None:
         await self._store.append(user_id, conv_id, "user", user_msg)
         n = await self._store.append(user_id, conv_id, "assistant", assistant_msg)
-        if n >= COMPRESS_AT:
-            task = asyncio.create_task(self.compress(user_id, conv_id))
-            self._tasks.add(task)
-            task.add_done_callback(self._tasks.discard)
+        # 两件后台工作，都不占用请求的响应时间
+        self._in_background(self._after_turn(user_id, conv_id, needs_compression=n >= COMPRESS_AT))
+
+    async def _after_turn(self, user_id: str, conv_id: str, needs_compression: bool) -> None:
+        if needs_compression:
+            await self.compress(user_id, conv_id)
+        await self.remember(user_id, conv_id)   # 放在压缩之后，这样写入长期记忆的是最新的摘要
+
+    async def remember(self, user_id: str, conv_id: str) -> None:
+        """把当前会话的要点写入长期记忆。失败只记日志。"""
+        if self._longterm is None:
+            return
+        try:
+            messages, summary = await asyncio.gather(
+                self._store.messages(user_id, conv_id), self._store.get_summary(user_id, conv_id))
+            await self._longterm.remember(user_id, conv_id, build_episode_text(summary, messages))
+        except Exception as ex:
+            logger.warning("写入长期记忆失败: %r", ex)
+
+    async def recall(self, user_id: str, conv_id: str, query: str) -> list[str]:
+        """想起这个用户以往会话里和当前问题相关的内容。限时执行，超时或失败都返回空列表。"""
+        if self._longterm is None:
+            return []
+        try:
+            hits = await asyncio.wait_for(
+                self._longterm.recall(user_id, query, exclude_conv_id=conv_id), timeout=RECALL_TIMEOUT_S)
+            return [h["text"] for h in hits]
+        except Exception as ex:
+            logger.warning("检索长期记忆失败，按没有相关记忆处理: %r", ex)
+            return []
 
     async def compress(self, user_id: str, conv_id: str) -> bool:
         """把旧消息压缩进摘要。返回是否真的执行了压缩。任何失败都只记日志，原始消息保持不动。"""

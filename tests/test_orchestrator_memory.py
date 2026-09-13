@@ -63,3 +63,60 @@ async def test_tool_context_only_contains_what_the_user_said():
     await orch.handle("我想退款", "u1001", "c9")
     await orch.handle("订单号是 A12345", "u1001", "c9")
     assert "我想退款" in captured["text"] and "A12345" in captured["text"] and "Z99999" not in captured["text"]
+
+
+async def test_memories_from_an_earlier_conversation_reach_the_agent(tmp_path):
+    import chromadb
+    from app.memory.longterm import LongTermMemory
+    from tests.fakes import FakeEmbedder
+
+    client = chromadb.PersistentClient(path=str(tmp_path), settings=chromadb.Settings(anonymized_telemetry=False))
+    llm = FakeLLM("payment_issue")
+    store = ConversationStore(fakeredis.FakeAsyncRedis(decode_responses=True))
+    memory = MemoryManager(store, llm, LongTermMemory(FakeEmbedder(), client, min_similarity=0.33))
+    orch = Orchestrator(llm, memory=memory)
+
+    await orch.handle("订单 B20250917 被重复扣款了", "u1001", "monday")
+    await memory.wait_background()                                   # 等后台把这次会话写进长期记忆
+
+    result = await orch.handle("上次那个重复扣款的订单后来怎么样了", "u1001", "friday")
+    assert result.memories_used and "B20250917" in result.memories_used[0]
+    assert "B20250917" in llm.agent_inputs["billing"]                # 账单 Agent 真的看到了这段往事
+
+    other = await orch.handle("上次那个重复扣款的订单后来怎么样了", "u1002", "friday")
+    assert other.memories_used == []                                 # 换一个用户，什么也想不起来
+
+
+async def test_recall_failure_does_not_break_the_request():
+    class FlakyMemory:
+        async def load(self, *a):
+            from app.memory.manager import MemoryContext
+            return MemoryContext()
+        async def save_turn(self, *a): pass
+        async def recall(self, *a): raise TimeoutError("向量服务超时")
+
+    r = await Orchestrator(FakeLLM("invoice"), memory=FlakyMemory()).handle("帮我开发票", "u1001", "c1")
+    assert r.response == "billing 的回答" and r.memories_used == []
+
+
+async def test_order_id_recalled_from_memory_passes_the_grounding_check(tmp_path):
+    """用户上次提过订单号，这次只说"上次那个订单"。想起来的订单号应当允许用于查询。"""
+    captured = {}
+
+    class SpyAgent:
+        async def run(self, message, ctx, background="", history=None):
+            captured["text"] = ctx.conversation_text
+            from app.agents.base import AgentReply
+            return AgentReply("billing", "好的", True)
+
+    class StubMemory:
+        async def load(self, *a):
+            from app.memory.manager import MemoryContext
+            return MemoryContext()
+        async def save_turn(self, *a): pass
+        async def recall(self, *a): return ["用户说过：订单 B20250917 被重复扣款了"]
+
+    orch = Orchestrator(FakeLLM("payment_issue"), memory=StubMemory())
+    orch._agents["billing"] = SpyAgent()
+    await orch.handle("上次那个重复扣款的订单后来怎么样了", "u1001", "friday")
+    assert "B20250917" in captured["text"]

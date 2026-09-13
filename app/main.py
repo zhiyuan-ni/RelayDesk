@@ -14,6 +14,7 @@ from app.knowledge.kb import KnowledgeBase
 from app.knowledge.retriever import Retriever
 from app.knowledge.tool import build_knowledge_tool, knowledge_fallback
 from app.llm import LLMClient
+from app.memory.longterm import LongTermMemory
 from app.memory.manager import MemoryManager
 from app.memory.store import ConversationStore
 from app.orchestrator import Orchestrator
@@ -25,7 +26,19 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger(__name__)
 
 
-async def _connect_memory(llm):
+async def _open_longterm(kb):
+    """长期记忆和知识库共用同一个 ChromaDB 客户端和向量模型，存在不同的集合里。打不开就不启用，不影响启动。"""
+    try:
+        longterm = LongTermMemory(kb.embedder, kb.client)
+        state = await longterm.ensure_ready()
+        logger.info("长期记忆就绪: %s, 已有 %d 条", state, await longterm.count())
+        return longterm
+    except Exception as ex:
+        logger.warning("长期记忆不可用，本次运行不启用: %r", ex)
+        return None
+
+
+async def _connect_memory(llm, longterm=None):
     """连接 Redis。连不上时不阻止启动，系统退化为无记忆模式并给出明确警告。
 
     和知识库初始化的处理不同：那里选择启动失败，因为向量模型配错了就什么都检索不到，属于配置错误。
@@ -39,7 +52,7 @@ async def _connect_memory(llm):
         await client.aclose()
         return None, None
     logger.info("会话记忆已启用: %s", settings.redis_url)
-    return MemoryManager(ConversationStore(client), llm), client
+    return MemoryManager(ConversationStore(client), llm, longterm), client
 
 
 @asynccontextmanager
@@ -70,7 +83,7 @@ async def lifespan(app: FastAPI):
 
     app.state.kb = kb
     app.state.retriever = retriever
-    memory, redis_client = await _connect_memory(llm)
+    memory, redis_client = await _connect_memory(llm, await _open_longterm(kb))
     app.state.memory = memory
     app.state.orchestrator = Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory)
     yield
@@ -114,6 +127,8 @@ class ChatResponse(BaseModel):
     routing_reason: str
     # 工具
     tool_traces: list[dict[str, Any]]
+    # 记忆
+    memories_used: list[str]
 
 
 @app.get("/health")
@@ -158,4 +173,5 @@ async def chat(req: ChatRequest, orch: Orchestrator = Depends(get_orchestrator))
         routing_scores=decision.scores,
         routing_reason=decision.reason,
         tool_traces=result.tool_traces,
+        memories_used=result.memories_used,
     )

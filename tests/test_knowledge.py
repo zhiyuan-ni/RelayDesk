@@ -8,24 +8,7 @@ from app.agents.tools import ToolContext
 from app.knowledge.chunker import Chunk
 from app.knowledge.kb import KnowledgeBase
 from app.knowledge.tool import TOOL_NAME, build_knowledge_tool
-
-
-class FakeEmbedder:
-    """按字符做哈希计数的假向量。共同字符越多的文本，向量越接近，足够验证检索流程。"""
-    def __init__(self, model="fake-embed-a", error=None):
-        self.calls, self.model, self.error = 0, model, error
-
-    async def embed(self, texts):
-        if self.error:
-            raise self.error
-        self.calls += 1
-        out = []
-        for t in texts:
-            v = [0.0] * 64
-            for ch in t:
-                v[int(hashlib.md5(ch.encode()).hexdigest(), 16) % 64] += 1.0
-            out.append(v)
-        return out
+from tests.fakes import FakeEmbedder
 
 
 CHUNKS = [
