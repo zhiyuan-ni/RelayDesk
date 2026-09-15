@@ -22,7 +22,7 @@ from app.routing.router import RoutingDecision, decide
 
 logger = logging.getLogger(__name__)
 
-CLARIFY_TEXT = "我还不太确定您想处理哪类问题。方便说一下是订单物流、退款或扣款、发票，还是登录和报错方面的问题吗？"
+CLARIFY_TEXT = "我还不太确定您想处理哪类问题。方便说一下是订单物流、退换货或退款、扣款、发票，还是登录和报错方面的问题吗？"
 
 
 # 多个 Agent 并行时每人都会看到完整的用户消息。不加这段说明，账单 Agent 会对登录问题回一句

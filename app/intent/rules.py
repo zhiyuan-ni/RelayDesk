@@ -12,7 +12,7 @@ from app.intent.schema import Intent, Urgency, Vote
 KEYWORDS: dict[Intent, list[str]] = {
     Intent.HUMAN_HANDOFF: ["转人工", "人工客服", "找人工", "真人", "找你们经理"],
     Intent.PAYMENT_ISSUE: ["重复扣款", "扣了两次", "多扣", "乱扣", "支付失败", "付款失败", "扣费"],
-    Intent.REFUND: ["退款", "退货", "退钱", "refund"],
+    Intent.REFUND: ["退款", "退货", "退钱", "换货", "退换", "维修", "保修", "返修", "补发", "refund"],
     Intent.INVOICE: ["发票", "抬头", "税号", "invoice"],
     Intent.ACCOUNT_SECURITY: ["被盗", "异常登录", "改密码", "重置密码", "修改邮箱", "换绑", "注销账"],
     Intent.TECH_LOGIN: ["无法登录", "登录失败", "登不上", "登录不了", "验证码", "401"],
