@@ -1,0 +1,2168 @@
+{
+  "split": "dev",
+  "accuracy_ci95": [
+    0.8764,
+    0.964
+  ],
+  "generated_at": "2026-09-23 09:41:39",
+  "model": "qwen3.8-flash",
+  "n_cases": 133,
+  "per_class_counts": {
+    "greeting": 4,
+    "complaint": 10,
+    "refund": 14,
+    "payment_issue": 7,
+    "tech_error": 13,
+    "human_handoff": 8,
+    "other": 20,
+    "invoice": 20,
+    "order_logistics": 19,
+    "account_security": 10,
+    "tech_login": 8
+  },
+  "reports": {
+    "rule": {
+      "accuracy": 0.4662,
+      "macro_f1": 0.417,
+      "per_class": {
+        "account_security": {
+          "precision": 0.6667,
+          "recall": 0.2,
+          "f1": 0.3077,
+          "support": 10
+        },
+        "complaint": {
+          "precision": 1.0,
+          "recall": 0.1,
+          "f1": 0.1818,
+          "support": 10
+        },
+        "greeting": {
+          "precision": 0.1429,
+          "recall": 0.25,
+          "f1": 0.1818,
+          "support": 4
+        },
+        "human_handoff": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6667,
+          "support": 8
+        },
+        "invoice": {
+          "precision": 1.0,
+          "recall": 0.85,
+          "f1": 0.9189,
+          "support": 20
+        },
+        "order_logistics": {
+          "precision": 0.7,
+          "recall": 0.3684,
+          "f1": 0.4828,
+          "support": 19
+        },
+        "other": {
+          "precision": 0.2237,
+          "recall": 0.85,
+          "f1": 0.3542,
+          "support": 20
+        },
+        "payment_issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7
+        },
+        "refund": {
+          "precision": 0.875,
+          "recall": 0.5,
+          "f1": 0.6364,
+          "support": 14
+        },
+        "tech_error": {
+          "precision": 1.0,
+          "recall": 0.0769,
+          "f1": 0.1429,
+          "support": 13
+        },
+        "tech_login": {
+          "precision": 0.8333,
+          "recall": 0.625,
+          "f1": 0.7143,
+          "support": 8
+        }
+      }
+    },
+    "llm": {
+      "accuracy": 0.9323,
+      "macro_f1": 0.925,
+      "per_class": {
+        "account_security": {
+          "precision": 0.8333,
+          "recall": 1.0,
+          "f1": 0.9091,
+          "support": 10
+        },
+        "complaint": {
+          "precision": 0.7692,
+          "recall": 1.0,
+          "f1": 0.8696,
+          "support": 10
+        },
+        "greeting": {
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1": 0.8889,
+          "support": 4
+        },
+        "human_handoff": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571,
+          "support": 8
+        },
+        "invoice": {
+          "precision": 1.0,
+          "recall": 0.95,
+          "f1": 0.9744,
+          "support": 20
+        },
+        "order_logistics": {
+          "precision": 1.0,
+          "recall": 0.8947,
+          "f1": 0.9444,
+          "support": 19
+        },
+        "other": {
+          "precision": 0.9091,
+          "recall": 1.0,
+          "f1": 0.9524,
+          "support": 20
+        },
+        "payment_issue": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 7
+        },
+        "refund": {
+          "precision": 0.9286,
+          "recall": 0.9286,
+          "f1": 0.9286,
+          "support": 14
+        },
+        "tech_error": {
+          "precision": 1.0,
+          "recall": 0.8462,
+          "f1": 0.9167,
+          "support": 13
+        },
+        "tech_login": {
+          "precision": 1.0,
+          "recall": 0.875,
+          "f1": 0.9333,
+          "support": 8
+        }
+      }
+    },
+    "fused": {
+      "accuracy": 0.9323,
+      "macro_f1": 0.925,
+      "per_class": {
+        "account_security": {
+          "precision": 0.8333,
+          "recall": 1.0,
+          "f1": 0.9091,
+          "support": 10
+        },
+        "complaint": {
+          "precision": 0.7692,
+          "recall": 1.0,
+          "f1": 0.8696,
+          "support": 10
+        },
+        "greeting": {
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1": 0.8889,
+          "support": 4
+        },
+        "human_handoff": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571,
+          "support": 8
+        },
+        "invoice": {
+          "precision": 1.0,
+          "recall": 0.95,
+          "f1": 0.9744,
+          "support": 20
+        },
+        "order_logistics": {
+          "precision": 1.0,
+          "recall": 0.8947,
+          "f1": 0.9444,
+          "support": 19
+        },
+        "other": {
+          "precision": 0.9091,
+          "recall": 1.0,
+          "f1": 0.9524,
+          "support": 20
+        },
+        "payment_issue": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 7
+        },
+        "refund": {
+          "precision": 0.9286,
+          "recall": 0.9286,
+          "f1": 0.9286,
+          "support": 14
+        },
+        "tech_error": {
+          "precision": 1.0,
+          "recall": 0.8462,
+          "f1": 0.9167,
+          "support": 13
+        },
+        "tech_login": {
+          "precision": 1.0,
+          "recall": 0.875,
+          "f1": 0.9333,
+          "support": 8
+        }
+      }
+    }
+  },
+  "confusions": [
+    [
+      "invoice",
+      "account_security",
+      1
+    ],
+    [
+      "human_handoff",
+      "greeting",
+      1
+    ],
+    [
+      "human_handoff",
+      "complaint",
+      1
+    ],
+    [
+      "refund",
+      "complaint",
+      1
+    ],
+    [
+      "tech_login",
+      "account_security",
+      1
+    ],
+    [
+      "tech_error",
+      "refund",
+      1
+    ],
+    [
+      "tech_error",
+      "other",
+      1
+    ],
+    [
+      "order_logistics",
+      "complaint",
+      1
+    ]
+  ],
+  "sources": {
+    "llm": 90,
+    "both": 43
+  },
+  "llm_failures": 0,
+  "with_notes": true,
+  "errors": [
+    {
+      "text": "需要哪些信息呢",
+      "intent": "invoice",
+      "history": [
+        {
+          "role": "assistant",
+          "content": "亲亲麻烦您提供下需要更改的信息哦"
+        },
+        {
+          "role": "user",
+          "content": "是有你们帮忙更改吗"
+        },
+        {
+          "role": "assistant",
+          "content": "亲亲是的呢，您提供下信息妹子给您申请更改呢"
+        },
+        {
+          "role": "user",
+          "content": "好的，稍等"
+        }
+      ],
+      "note": "省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2094
+    },
+    {
+      "text": "你是我的专属客服么?早上我问的是你给我解答的么",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "greeting",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "greeting",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1830
+    },
+    {
+      "text": "为什么上面买东西没人回我",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1873
+    },
+    {
+      "text": "我要求的退货的已经三天了，产品质量非常差，自行车居然没有刹车。还说是自然现象",
+      "intent": "refund",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2630
+    },
+    {
+      "text": "记得密码要是忘了自己也可以改吧",
+      "intent": "tech_login",
+      "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2810
+    },
+    {
+      "text": "我出的两件物品怎么APP看不到进度啊",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2383
+    },
+    {
+      "text": "为啥不能购买图书呢、",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2316
+    },
+    {
+      "text": "还忽悠说已经发货只不过没找到快递单号，然后换了一个客服，另外个客服说并没有发货",
+      "intent": "order_logistics",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2468
+    },
+    {
+      "text": "无语了，他到底还有货没",
+      "intent": "order_logistics",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5996
+    }
+  ],
+  "rows": [
+    {
+      "text": "有人在线吗",
+      "intent": "greeting",
+      "author": "seed",
+      "pred_fused": "greeting",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "greeting",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2396
+    },
+    {
+      "text": "问了三遍都没人理，你们就是这么做生意的？",
+      "intent": "complaint",
+      "author": "seed",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2597
+    },
+    {
+      "text": "买回来发现用不上，想退掉",
+      "intent": "refund",
+      "author": "seed",
+      "pred_fused": "refund",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2260
+    },
+    {
+      "text": "银行短信提示我同一笔消费付了两遍",
+      "intent": "payment_issue",
+      "author": "seed",
+      "pred_fused": "payment_issue",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2188
+    },
+    {
+      "text": "一点结算整个屏幕就白了",
+      "intent": "tech_error",
+      "author": "seed",
+      "pred_fused": "tech_error",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3406
+    },
+    {
+      "text": "别再给我发自动回复了，找个真人来",
+      "intent": "human_handoff",
+      "author": "seed",
+      "pred_fused": "human_handoff",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "human_handoff",
+      "pred_rule": "human_handoff",
+      "llm_failed": false,
+      "latency_ms": 2537
+    },
+    {
+      "text": "这个我公司已经付款了，怎么网上还是显示等待付款呢?",
+      "intent": "payment_issue",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2825
+    },
+    {
+      "text": "他是微信帮忙支付的那个渠道，我以为他没支付呢，所以就自己付款成功了，怎么查询呢",
+      "intent": "payment_issue",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2057
+    },
+    {
+      "text": "这个花费还没过来呢，我上午交的，上午交的到现在都没过来，刚才又交了都过来了",
+      "intent": "payment_issue",
+      "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 4601
+    },
+    {
+      "text": "我两小时前冲的，现在还没有到，",
+      "intent": "payment_issue",
+      "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2149
+    },
+    {
+      "text": "为什么我充的话费还没有到账呢",
+      "intent": "payment_issue",
+      "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3575
+    },
+    {
+      "text": "话费怎么还没到账",
+      "intent": "payment_issue",
+      "history": [
+        {
+          "role": "user",
+          "content": "咨询订单号:C77204"
+        }
+      ],
+      "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other；省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "payment_issue",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "payment_issue",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2471
+    },
+    {
+      "text": "你好，请问流量管理在哪啊?",
+      "intent": "other",
+      "note": "付款前咨询，见指南第 5 条",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 2111
+    },
+    {
+      "text": "充值之后怎么开发票",
+      "intent": "invoice",
+      "note": "充值后要发票，诉求是开票不是支付",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 1750
+    },
+    {
+      "text": "拒收之后怎么退款?",
+      "intent": "refund",
+      "history": [
+        {
+          "role": "user",
+          "content": "是不是因为我之前用那个订单号咨询的。所以那个就更慢了啊"
+        },
+        {
+          "role": "assistant",
+          "content": "亲亲由于近期活动比较多，订单量较高导致物流送货延迟这个是我们物流的问题还请您谅解"
+        },
+        {
+          "role": "user",
+          "content": "今天不能送我可不可以选择退货?"
+        },
+        {
+          "role": "assistant",
+          "content": "亲亲十分抱歉哈您的订单正在运输配送中呢如果今天不到的话您之后拒收就可以了呢"
+        }
+      ],
+      "note": "见指南第 6、7 条：取消或拒收后问退款",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2561
+    },
+    {
+      "text": "退货，我已经拒收了……",
+      "intent": "refund",
+      "note": "见指南第 6、7 条：取消或拒收后问退款",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2217
+    },
+    {
+      "text": "能不能退了重新买，我重新买一个，把这个退了，退货会有运费吗",
+      "intent": "refund",
+      "note": "见指南第 6、7 条：取消或拒收后问退款",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2909
+    },
+    {
+      "text": "我的订单被拒收了怎么还扣款，付款成功了，我联系卖家卖家不做回复，我的快递到不了目的地要经转，因为没有及时去自提所以被物流自行做拒收处理",
+      "intent": "refund",
+      "note": "见指南第 6、7 条：取消或拒收后问退款",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 1834
+    },
+    {
+      "text": "明天发?那我明天能收到了吗",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3687
+    },
+    {
+      "text": "我还没有看到货，应该是快递公司的小哥帮忙签收了，那现在怎么处理呢",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2253
+    },
+    {
+      "text": "怎么没改成功，?我想改地址",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2366
+    },
+    {
+      "text": "你能不能帮我改一下送货电话，我原来留的号停用了，上一个客服小姐说必须发货才能改",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2456
+    },
+    {
+      "text": "我的订单为什么还不发货",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2925
+    },
+    {
+      "text": "不能拦截物流吗",
+      "intent": "order_logistics",
+      "history": [
+        {
+          "role": "assistant",
+          "content": "小妹这边查看订单是有多个订单组成的哦，其他也会联动取消的，确定要取消吗?"
+        },
+        {
+          "role": "user",
+          "content": "这个等不及了，嗯嗯是的，两个订单，咨询订单号:G16802商品ID:5235865"
+        },
+        {
+          "role": "assistant",
+          "content": "确实非常抱歉呢~全球购系统与海关系统进行对接，您下单成功后会为您同步电子报关的呢。所以不支持取消订单与修改订单哒。"
+        },
+        {
+          "role": "user",
+          "content": "那怎么办呢"
+        }
+      ],
+      "note": "见指南第 6 条：取消或拦截标 order_logistics，取消后问退款标 refund；省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 3122
+    },
+    {
+      "text": "我能不能那个拒收，这个重新买一个，不是，太远了",
+      "intent": "order_logistics",
+      "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2308
+    },
+    {
+      "text": "可以更改收货地址吗",
+      "intent": "order_logistics",
+      "history": [
+        {
+          "role": "user",
+          "content": "咨询订单号:B91495，你好"
+        },
+        {
+          "role": "assistant",
+          "content": "有什么问题我可以帮您处理或解决呢?"
+        }
+      ],
+      "note": "省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 4236
+    },
+    {
+      "text": "不知状态，货到了，不知在哪，二天了，没人通知到哪取货",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3632
+    },
+    {
+      "text": "我的快递怎么都在配送了，怎么又返回仓库了，今天等着用",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2560
+    },
+    {
+      "text": "我怎么付款了一单，出库了，还被取消啦",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2206
+    },
+    {
+      "text": "为什么我收了货.显示还是待收货?",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2186
+    },
+    {
+      "text": "没收到货，怎么显示已完成呢，送哪里去了",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 4254
+    },
+    {
+      "text": "你好订单怎么改送货时间",
+      "intent": "order_logistics",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 2773
+    },
+    {
+      "text": "系统自动处理的?我还没跟快递员说拒收呢",
+      "intent": "order_logistics",
+      "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "order_logistics",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 4114
+    },
+    {
+      "text": "没收到货就被签收了还没法申请售后，那怎么申请退款页面也没有",
+      "intent": "refund",
+      "author": "csds",
+      "note": "见指南第 6、7 条：诉求是退款",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 3816
+    },
+    {
+      "text": "就是不会我拒收了。然后这边显示到时间自动签收吧。",
+      "intent": "order_logistics",
+      "note": "见指南第 6、7 条：诉求是退款",
+      "author": "csds",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2875
+    },
+    {
+      "text": "那能不能按原支付方式退回",
+      "intent": "refund",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2710
+    },
+    {
+      "text": "您好!我想问一下，我的换货是等着上门换新吗",
+      "intent": "refund",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 4594
+    },
+    {
+      "text": "什么时候能换",
+      "intent": "refund",
+      "history": [
+        {
+          "role": "assistant",
+          "content": "/这边帮您咨询一下"
+        },
+        {
+          "role": "user",
+          "content": "好的"
+        },
+        {
+          "role": "assistant",
+          "content": "还请您稍等，这边帮您申请售后服务单给您上门换新可以吗?"
+        },
+        {
+          "role": "user",
+          "content": "可以"
+        }
+      ],
+      "note": "省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2300
+    },
+    {
+      "text": "少发了一个鱿鱼片",
+      "intent": "refund",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5288
+    },
+    {
+      "text": "我有个订单的货多买了两个，我想请问这种我退两个的话是退多少钱",
+      "intent": "refund",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3246
+    },
+    {
+      "text": "怎么更改登录手机号，之前卡丢失让你们客服改过一次，现在卡补回了，我想换回原来绑定的手机号",
+      "intent": "account_security",
+      "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2394
+    },
+    {
+      "text": "之前关联的电话号码以后注销了.怎么更改电话号码?",
+      "intent": "account_security",
+      "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1947
+    },
+    {
+      "text": "现在不用了，怎么注销，谢谢",
+      "intent": "account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1968
+    },
+    {
+      "text": "注销账号",
+      "intent": "account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "account_security",
+      "pred_rule": "account_security",
+      "llm_failed": false,
+      "latency_ms": 3260
+    },
+    {
+      "text": "登录的时候提示存在被盗风险，让我重置密码，",
+      "intent": "account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "account_security",
+      "pred_rule": "account_security",
+      "llm_failed": false,
+      "latency_ms": 2455
+    },
+    {
+      "text": "或者你直接帮我把那个账号的身份证取消绑定也行",
+      "intent": "account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2874
+    },
+    {
+      "text": "微信可以解绑吗",
+      "intent": "account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2265
+    },
+    {
+      "text": "我找回密码，但是手机号码变更了",
+      "intent": "account_security",
+      "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2126
+    },
+    {
+      "text": "刚才下单忘了点开票了，可以到时候我自己下载电子发票吗，就帮我把U盘的开一下就好",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 3790
+    },
+    {
+      "text": "订单号:C25458的发票没开吗，有的",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 1716
+    },
+    {
+      "text": "你好我想问下这个发票能换成公司的吗",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2370
+    },
+    {
+      "text": "我要开电子发票，怎么修改为公司的抬头呢",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2356
+    },
+    {
+      "text": "这几张订单你们帮我开了个人抬头，但我是要开公司抬头的",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2023
+    },
+    {
+      "text": "订单号:B64464，发票能重新开吗?货物名称不要出现“交换机”",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2664
+    },
+    {
+      "text": "我发票弄错了，可否开个人",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2925
+    },
+    {
+      "text": "订单显示未开，那么我能改下发票的抬头吗?",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2572
+    },
+    {
+      "text": "买的这个东西，财务说发票没有开公司税号，之前的发票要退回去吗",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2627
+    },
+    {
+      "text": "这单我忘了选择开增票后面可以补开增票么，电子发票抬头是个人的可以修改为增票么",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2164
+    },
+    {
+      "text": "您好我已经添加增票的信息，可是今天买东西为什么开不了?",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "invoice",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 1841
+    },
+    {
+      "text": "我们公司有认证过专票资格，但是后期公司名称有变更，我现在要怎么变更开票资料呢",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "invoice",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2457
+    },
+    {
+      "text": "电子发票从哪里，下载呀",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2809
+    },
+    {
+      "text": "现在发票都是电子发票?没有纸质的吗?",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 1776
+    },
+    {
+      "text": "因为要报销可能需要纸质发票，打印应该不行",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 2235
+    },
+    {
+      "text": "你好我的发票什么时候可以寄出了",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 3089
+    },
+    {
+      "text": "你们会把发票寄过来吗?",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 3176
+    },
+    {
+      "text": "为什么没有给开增值税发票，我的包裹里没有",
+      "intent": "invoice",
+      "author": "csds",
+      "pred_fused": "invoice",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "invoice",
+      "pred_rule": "invoice",
+      "llm_failed": false,
+      "latency_ms": 1980
+    },
+    {
+      "text": "需要哪些信息呢",
+      "intent": "invoice",
+      "history": [
+        {
+          "role": "assistant",
+          "content": "亲亲麻烦您提供下需要更改的信息哦"
+        },
+        {
+          "role": "user",
+          "content": "是有你们帮忙更改吗"
+        },
+        {
+          "role": "assistant",
+          "content": "亲亲是的呢，您提供下信息妹子给您申请更改呢"
+        },
+        {
+          "role": "user",
+          "content": "好的，稍等"
+        }
+      ],
+      "note": "省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2094
+    },
+    {
+      "text": "找回密码的短信验证码接受不到，没有",
+      "intent": "tech_login",
+      "note": "收不到验证码，见指南第 9 条",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_login",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 2230
+    },
+    {
+      "text": "转人工客服",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "human_handoff",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "human_handoff",
+      "pred_rule": "human_handoff",
+      "llm_failed": false,
+      "latency_ms": 1929
+    },
+    {
+      "text": "有人工客服吗",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "human_handoff",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "human_handoff",
+      "pred_rule": "human_handoff",
+      "llm_failed": false,
+      "latency_ms": 5578
+    },
+    {
+      "text": "你们人工电话什么我打电话咨询一下",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "human_handoff",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "human_handoff",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2317
+    },
+    {
+      "text": "之前的问题，找不到你说的那个人工服务台",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "human_handoff",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "human_handoff",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1779
+    },
+    {
+      "text": "你是我的专属客服么?早上我问的是你给我解答的么",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "greeting",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "greeting",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1830
+    },
+    {
+      "text": "为什么上面买东西没人回我",
+      "intent": "human_handoff",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1873
+    },
+    {
+      "text": "我想要长春分拨中心的电话",
+      "intent": "order_logistics",
+      "author": "csds",
+      "note": "要的是配送方电话，见指南第 10 条",
+      "pred_fused": "order_logistics",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "order_logistics",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 6037
+    },
+    {
+      "text": "价保自助申请不成功，要人工帮我申请一下",
+      "intent": "other",
+      "author": "csds",
+      "note": "含人工二字但诉求是价保，见指南第 10 条",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5617
+    },
+    {
+      "text": "我要求的退货的已经三天了，产品质量非常差，自行车居然没有刹车。还说是自然现象",
+      "intent": "refund",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2630
+    },
+    {
+      "text": "今天刚到的显示器，但是总感觉有点模糊，这个可以调一下吗?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2180
+    },
+    {
+      "text": "我想问一下这个手机回收，是上门就验机嘛",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2212
+    },
+    {
+      "text": "是否LED都是比较容易累眼?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3400
+    },
+    {
+      "text": "您好，我这个订单复合单笔一万的活动条件吧?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 3384
+    },
+    {
+      "text": "你好，这笔记本电脑不送电脑包和鼠标吗?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 2684
+    },
+    {
+      "text": "我想问一下这个护臀膏的功效，就能擦屁股其他的部位可以用吗，身上也可以用呗",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1845
+    },
+    {
+      "text": "冰晶盒怎么用",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 6069
+    },
+    {
+      "text": "怎样预约安装空调",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2662
+    },
+    {
+      "text": "能不能安装在电视机上面吗?摄像机想放在电视机上面，不会影响网络吧",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5537
+    },
+    {
+      "text": "亲，我以前voyage的充电器，这个可以用吗?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2661
+    },
+    {
+      "text": "我的手特别干，这款有美白的效果么",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2929
+    },
+    {
+      "text": "打印机怎么安装呢?",
+      "intent": "other",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 4874
+    },
+    {
+      "text": "我这少一袋腰果，我定的两袋。就送了一袋",
+      "intent": "refund",
+      "author": "csds",
+      "note": "商品缺件或故障，属售后，见指南第 3 条",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5531
+    },
+    {
+      "text": "你是机器人还是真人啊",
+      "intent": "human_handoff",
+      "pred_fused": "human_handoff",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "human_handoff",
+      "pred_rule": "human_handoff",
+      "llm_failed": false,
+      "latency_ms": 2309
+    },
+    {
+      "text": "你们公司还招人吗",
+      "intent": "other",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1873
+    },
+    {
+      "text": "你们工资一个月多少",
+      "intent": "other",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1818
+    },
+    {
+      "text": "面试完一周了还没通知，是不是没戏了",
+      "intent": "other",
+      "note": "抱怨语气，但诉求是招聘，和客服业务无关",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1964
+    },
+    {
+      "text": "明天北京下雨吗",
+      "intent": "other",
+      "pred_fused": "other",
+      "confidence": 1.0,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2252
+    },
+    {
+      "text": "世界杯今晚谁踢谁",
+      "intent": "other",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1742
+    },
+    {
+      "text": "我密码忘了😭😭😭",
+      "intent": "tech_login",
+      "history": [
+        {
+          "role": "assistant",
+          "content": "那您直接登录就可以了"
+        },
+        {
+          "role": "user",
+          "content": "OK OK谢谢谢谢"
+        },
+        {
+          "role": "assistant",
+          "content": "请问还有其他还可以帮到您的吗?"
+        },
+        {
+          "role": "user",
+          "content": "emmm，那啥"
+        }
+      ],
+      "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security；省略句，需要上文",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "tech_login",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2908
+    },
+    {
+      "text": "我的密码忘记了，但是修改密码需要填写收货人姓名，可我还没收过货，一直错误",
+      "intent": "tech_login",
+      "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_login",
+      "pred_rule": "account_security",
+      "llm_failed": false,
+      "latency_ms": 2112
+    },
+    {
+      "text": "记得密码要是忘了自己也可以改吧",
+      "intent": "tech_login",
+      "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security",
+      "author": "csds",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2810
+    },
+    {
+      "text": "手机收不到验证码",
+      "intent": "tech_login",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_login",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 2405
+    },
+    {
+      "text": "还在使用，但是现在收不到验证码",
+      "intent": "tech_login",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_login",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 2970
+    },
+    {
+      "text": "以前经常登不上，只要一周左右不登录，密码就用不成了，后来客服给了新密码才好了",
+      "intent": "tech_login",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_login",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 5635
+    },
+    {
+      "text": "现在直接登不上",
+      "intent": "tech_login",
+      "author": "csds",
+      "pred_fused": "tech_login",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_login",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 2266
+    },
+    {
+      "text": "你好，亲，以前的号码没用了，登录不上，可以改号码吗",
+      "intent": "account_security",
+      "author": "csds",
+      "note": "手机已换需改绑或支付密码，见指南第 8、9 条",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 2070
+    },
+    {
+      "text": "绑定的手机号不用了，收不到验证码怎么半?",
+      "intent": "account_security",
+      "author": "csds",
+      "note": "手机已换需改绑或支付密码，见指南第 8、9 条",
+      "pred_fused": "account_security",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "account_security",
+      "pred_rule": "tech_login",
+      "llm_failed": false,
+      "latency_ms": 2279
+    },
+    {
+      "text": "我为什么加不了购物车啊?加不了购物车我怎么保存",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1663
+    },
+    {
+      "text": "有个东西我买了两单，已经完成了，为什么不能评价?",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2716
+    },
+    {
+      "text": "我出的两件物品怎么APP看不到进度啊",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "refund",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "refund",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2383
+    },
+    {
+      "text": "加载不了。。。",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3643
+    },
+    {
+      "text": "申请退货提交不了",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 1718
+    },
+    {
+      "text": "我申请了，他让我点银信息，我点了老点不了",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2253
+    },
+    {
+      "text": "为啥不能购买图书呢、",
+      "intent": "tech_error",
+      "author": "csds",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2316
+    },
+    {
+      "text": "那个轮胎我少买了一个，现在买怎么买不了了??那怎么办?",
+      "intent": "other",
+      "author": "csds",
+      "note": "业务状态不允许，不是故障，见指南第 11 条",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2106
+    },
+    {
+      "text": "又闪了",
+      "intent": "tech_error",
+      "history": [
+        {
+          "role": "user",
+          "content": "你们app老是自己关掉"
+        },
+        {
+          "role": "assistant",
+          "content": "亲，麻烦您清理一下缓存后再试试哦"
+        }
+      ],
+      "note": "省略句，需要上文",
+      "pred_fused": "tech_error",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 4725
+    },
+    {
+      "text": "商品详情页打开是一片空白",
+      "intent": "tech_error",
+      "pred_fused": "tech_error",
+      "confidence": 0.98,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2168
+    },
+    {
+      "text": "提交的时候报500",
+      "intent": "tech_error",
+      "pred_fused": "tech_error",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "tech_error",
+      "pred_rule": "tech_error",
+      "llm_failed": false,
+      "latency_ms": 4836
+    },
+    {
+      "text": "打开链接是404",
+      "intent": "tech_error",
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 1674
+    },
+    {
+      "text": "503",
+      "intent": "tech_error",
+      "history": [
+        {
+          "role": "user",
+          "content": "你们网站打不开了"
+        }
+      ],
+      "pred_fused": "tech_error",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "tech_error",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 3828
+    },
+    {
+      "text": "快递员服务太差",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 5376
+    },
+    {
+      "text": "上面客服真忽悠客户呀",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2850
+    },
+    {
+      "text": "你们这个购物体验太差了吧，买个奶都买不了呢",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "complaint",
+      "pred_rule": "complaint",
+      "llm_failed": false,
+      "latency_ms": 2337
+    },
+    {
+      "text": "卖家一点都不负责任",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2969
+    },
+    {
+      "text": "这个快递公司真太差劲了",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2048
+    },
+    {
+      "text": "哎!又被忽悠了",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2408
+    },
+    {
+      "text": "好评都是刷的，坑人",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2094
+    },
+    {
+      "text": "意思就是你们这个不负责任了?",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2265
+    },
+    {
+      "text": "不要再忽悠人",
+      "intent": "complaint",
+      "author": "csds",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2253
+    },
+    {
+      "text": "还是有问题，给公司买的，公司决定退货，这个牌子品控太差，买别的",
+      "intent": "refund",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "refund",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "refund",
+      "pred_rule": "refund",
+      "llm_failed": false,
+      "latency_ms": 2285
+    },
+    {
+      "text": "还忽悠说已经发货只不过没找到快递单号，然后换了一个客服，另外个客服说并没有发货",
+      "intent": "order_logistics",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "complaint",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "complaint",
+      "pred_rule": "order_logistics",
+      "llm_failed": false,
+      "latency_ms": 2468
+    },
+    {
+      "text": "无语了，他到底还有货没",
+      "intent": "order_logistics",
+      "author": "csds",
+      "note": "带情绪的具体诉求，见指南第 1 条",
+      "pred_fused": "other",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "other",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 5996
+    },
+    {
+      "text": "有人吗?",
+      "intent": "greeting",
+      "author": "csds",
+      "pred_fused": "greeting",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "greeting",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2138
+    },
+    {
+      "text": "在不在",
+      "intent": "greeting",
+      "author": "csds",
+      "pred_fused": "greeting",
+      "confidence": 0.95,
+      "source": "llm",
+      "pred_llm": "greeting",
+      "pred_rule": "other",
+      "llm_failed": false,
+      "latency_ms": 2662
+    },
+    {
+      "text": "你好吗?",
+      "intent": "greeting",
+      "author": "csds",
+      "pred_fused": "greeting",
+      "confidence": 1.0,
+      "source": "both",
+      "pred_llm": "greeting",
+      "pred_rule": "greeting",
+      "llm_failed": false,
+      "latency_ms": 2116
+    }
+  ]
+}

@@ -1,0 +1,338 @@
+{"text": "有人在线吗", "intent": "greeting", "author": "seed"}
+{"text": "都五天了包裹还在原地没动", "intent": "order_logistics", "author": "seed"}
+{"text": "问了三遍都没人理，你们就是这么做生意的？", "intent": "complaint", "author": "seed"}
+{"text": "买回来发现用不上，想退掉", "intent": "refund", "author": "seed"}
+{"text": "财务让我补一张报销凭证", "intent": "invoice", "author": "seed"}
+{"text": "银行短信提示我同一笔消费付了两遍", "intent": "payment_issue", "author": "seed"}
+{"text": "输完账号密码一直在转圈，就是进不了首页", "intent": "tech_login", "author": "seed"}
+{"text": "一点结算整个屏幕就白了", "intent": "tech_error", "author": "seed"}
+{"text": "收到提醒说我的号在外地登录，可我一直在家", "intent": "account_security", "author": "seed"}
+{"text": "别再给我发自动回复了，找个真人来", "intent": "human_handoff", "author": "seed"}
+{"text": "你们公司招不招人", "intent": "other", "author": "seed"}
+{"text": "C77001", "intent": "invoice", "history": [{"role": "user", "content": "我要开发票"}, {"role": "assistant", "content": "请提供订单号"}], "note": "只有一个订单号，意图完全来自上文", "author": "seed"}
+{"text": "这个我公司已经付款了，怎么网上还是显示等待付款呢?", "intent": "payment_issue", "author": "csds"}
+{"text": "我刚才付款成功了怎么显示没付款", "intent": "payment_issue", "author": "csds"}
+{"text": "他是微信帮忙支付的那个渠道，我以为他没支付呢，所以就自己付款成功了，怎么查询呢", "intent": "payment_issue", "author": "csds"}
+{"text": "这个早上付了，帮我对下账", "intent": "payment_issue", "author": "csds"}
+{"text": "公司已付款，帮我对一下账", "intent": "payment_issue", "author": "csds"}
+{"text": "这个花费还没过来呢，我上午交的，上午交的到现在都没过来，刚才又交了都过来了", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "我和朋友同时微信付了同一笔，都显示扣款成功了，怎么查", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "我两小时前冲的，现在还没有到，", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "这个话费显示充值成功了为什么还不到账，一小时了才到", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "我的流量怎么还没有到账", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "为什么我充的话费还没有到账呢", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "我刚才充值的话费还没有到", "intent": "payment_issue", "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other", "author": "csds"}
+{"text": "话费怎么还没到账", "intent": "payment_issue", "history": [{"role": "user", "content": "咨询订单号:C77204"}], "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other；省略句，需要上文", "author": "csds"}
+{"text": "大概多久", "intent": "payment_issue", "history": [{"role": "user", "content": "咨询订单号:E72768，话费怎么还没到账"}, {"role": "assistant", "content": "请问您是咨询之前的问题还是有其他的问题需要处理呢?"}, {"role": "user", "content": "之前的问题"}, {"role": "assistant", "content": "月初充值的是有延迟的哦"}], "note": "见指南第 5 条：钱付了没到账标 payment_issue；还没付款的咨询标 other；省略句，需要上文", "author": "csds"}
+{"text": "货到付款在线支付公司转账哪个才会收到识别码我记得以前收到过这次没收到", "intent": "other", "author": "csds", "note": "付款前咨询，见指南第 5 条"}
+{"text": "余额充值在哪，把链接发给我", "intent": "other", "note": "付款前咨询，见指南第 5 条", "author": "csds"}
+{"text": "你好，请问流量管理在哪啊?", "intent": "other", "note": "付款前咨询，见指南第 5 条", "author": "csds"}
+{"text": "亲问一下这个流量包不是当天失效吧……", "intent": "other", "note": "付款前咨询，见指南第 5 条", "author": "csds"}
+{"text": "充值之后怎么开发票", "intent": "invoice", "note": "充值后要发票，诉求是开票不是支付", "author": "csds"}
+{"text": "我就点了一下付款 怎么支付宝里出来两条记录", "intent": "payment_issue"}
+{"text": "同一个订单号付了两回钱，多的那笔怎么办", "intent": "payment_issue", "note": "被多扣要求退回，标 payment_issue，见定义表 refund 的不包括列"}
+{"text": "两笔", "intent": "payment_issue", "history": [{"role": "user", "content": "我昨晚那个订单付款有问题"}, {"role": "assistant", "content": "您好，请问是出现了什么情况呢？"}, {"role": "user", "content": "银行卡扣款通知来了"}], "note": "省略句，需要上文"}
+{"text": "输完密码页面卡住不动了 也不知道付没付上", "intent": "payment_issue"}
+{"text": "付款一直转圈，转了五分钟了", "intent": "payment_issue"}
+{"text": "显示交易超时，但是我卡里钱已经没了", "intent": "payment_issue"}
+{"text": "云闪付一直提示订单状态异常付不了款", "intent": "payment_issue"}
+{"text": "付款失败了钱会退回来吗 已经扣了", "intent": "payment_issue", "note": "问的是被扣的钱去向，不是退款申请，按支付失败标"}
+{"text": "多扣的那几块能退给我吗", "intent": "payment_issue", "note": "被多扣要求退回，标 payment_issue，不是 refund"}
+{"text": "用了券怎么还是原价扣的", "intent": "payment_issue"}
+{"text": "拒收之后怎么退款?", "intent": "refund", "history": [{"role": "user", "content": "是不是因为我之前用那个订单号咨询的。所以那个就更慢了啊"}, {"role": "assistant", "content": "亲亲由于近期活动比较多，订单量较高导致物流送货延迟这个是我们物流的问题还请您谅解"}, {"role": "user", "content": "今天不能送我可不可以选择退货?"}, {"role": "assistant", "content": "亲亲十分抱歉哈您的订单正在运输配送中呢如果今天不到的话您之后拒收就可以了呢"}], "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "退货，我已经拒收了……", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "昨天你们帮申请退款了，但是还是发过来了，我拒签自动退款吗", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "我这个订单的款退了么，商品今天拒收了了，大概多久退款呢", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "能不能退了重新买，我重新买一个，把这个退了，退货会有运费吗", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "申请退款，另加一个打气筒重拍哈", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "我的订单被拒收了怎么还扣款，付款成功了，我联系卖家卖家不做回复，我的快递到不了目的地要经转，因为没有及时去自提所以被物流自行做拒收处理", "intent": "refund", "note": "见指南第 6、7 条：取消或拒收后问退款", "author": "csds"}
+{"text": "怎么送到苏州去了?我是上海的啊", "intent": "order_logistics", "author": "csds"}
+{"text": "我货都没有收到就说我签收了", "intent": "order_logistics", "author": "csds"}
+{"text": "我的书什么时候才能到啊", "intent": "order_logistics", "author": "csds"}
+{"text": "这个订单没有按时送到，现在可以改送到天鹅湖畔吗", "intent": "order_logistics", "author": "csds"}
+{"text": "明天发?那我明天能收到了吗", "intent": "order_logistics", "author": "csds"}
+{"text": "我还没有看到货，应该是快递公司的小哥帮忙签收了，那现在怎么处理呢", "intent": "order_logistics", "author": "csds"}
+{"text": "您现在能查到这个货是从哪里发出的吗?今天能到北京吗", "intent": "order_logistics", "author": "csds"}
+{"text": "我想请问一下，没送到，就能选择完成订单嘛?", "intent": "order_logistics", "author": "csds"}
+{"text": "怎么没改成功，?我想改地址", "intent": "order_logistics", "author": "csds"}
+{"text": "你能不能帮我改一下送货电话，我原来留的号停用了，上一个客服小姐说必须发货才能改", "intent": "order_logistics", "author": "csds"}
+{"text": "六一的礼物麻烦尽快发货，谢谢", "intent": "order_logistics", "author": "csds"}
+{"text": "我的订单为什么还不发货", "intent": "order_logistics", "author": "csds"}
+{"text": "取消订单，地址不对", "intent": "order_logistics", "note": "见指南第 6 条：取消或拦截标 order_logistics，取消后问退款标 refund", "author": "csds"}
+{"text": "我新下的订单如何取消", "intent": "order_logistics", "note": "见指南第 6 条：取消或拦截标 order_logistics，取消后问退款标 refund", "author": "csds"}
+{"text": "不能拦截物流吗", "intent": "order_logistics", "history": [{"role": "assistant", "content": "小妹这边查看订单是有多个订单组成的哦，其他也会联动取消的，确定要取消吗?"}, {"role": "user", "content": "这个等不及了，嗯嗯是的，两个订单，咨询订单号:G16802商品ID:5235865"}, {"role": "assistant", "content": "确实非常抱歉呢~全球购系统与海关系统进行对接，您下单成功后会为您同步电子报关的呢。所以不支持取消订单与修改订单哒。"}, {"role": "user", "content": "那怎么办呢"}], "note": "见指南第 6 条：取消或拦截标 order_logistics，取消后问退款标 refund；省略句，需要上文", "author": "csds"}
+{"text": "好好好拒收后还要什么操作吗", "intent": "order_logistics", "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund", "author": "csds"}
+{"text": "我能不能那个拒收，这个重新买一个，不是，太远了", "intent": "order_logistics", "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund", "author": "csds"}
+{"text": "如果快递发过来了，我也不想退，可以直接签收?", "intent": "order_logistics", "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund", "author": "csds"}
+{"text": "那我不拒收签收可以吧", "intent": "order_logistics", "history": [{"role": "user", "content": "没签收"}, {"role": "assistant", "content": "您拒收下"}, {"role": "user", "content": "我不是想退货，我想取消退款"}, {"role": "assistant", "content": "系统已拦截，没办法了，您只能重新下单了亲"}], "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund；省略句，需要上文", "author": "csds"}
+{"text": "等多长时间?", "intent": "order_logistics", "history": [{"role": "user", "content": "对"}, {"role": "assistant", "content": "您订单暂时没有现货的哈，您等待下到货后安排发货的哈"}, {"role": "user", "content": "?"}, {"role": "assistant", "content": "订单暂时没有现货的哈"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "配送的话大概要多久?", "intent": "order_logistics", "history": [{"role": "assistant", "content": "您好，耽误您的时间实在抱歉了，由于近期活动比较多，订单量较高导致物流送货延迟，鉴于此情况，我们也在加大人力物力缓解，再次恳请您的谅解呢，这边为您联系核实后将以短信告知您结果您看可以吗??"}, {"role": "user", "content": "哦，现在显示分配了"}, {"role": "assistant", "content": "那您看还需要为您催促吗??"}, {"role": "user", "content": "不用了"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "快递员怎么联系我", "intent": "order_logistics", "history": [{"role": "user", "content": "我不能修改，我怎么收货"}, {"role": "assistant", "content": "F97971，是这个订单吗亲"}, {"role": "user", "content": "嗯"}, {"role": "assistant", "content": "这个订单正在发往长治屯留站，今天就能到"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "可以更改收货地址吗", "intent": "order_logistics", "history": [{"role": "user", "content": "咨询订单号:B91495，你好"}, {"role": "assistant", "content": "有什么问题我可以帮您处理或解决呢?"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "不知状态，货到了，不知在哪，二天了，没人通知到哪取货", "intent": "order_logistics", "author": "csds"}
+{"text": "我的快递怎么都在配送了，怎么又返回仓库了，今天等着用", "intent": "order_logistics", "author": "csds"}
+{"text": "我怎么付款了一单，出库了，还被取消啦", "intent": "order_logistics", "author": "csds"}
+{"text": "为什么我收了货.显示还是待收货?", "intent": "order_logistics", "author": "csds"}
+{"text": "六月一号那天我的快递到了，你能不能告诉快递员直接把我的快递放在门卫室就行了", "intent": "order_logistics", "author": "csds"}
+{"text": "配送员送错了地址，现在找不到快递", "intent": "order_logistics", "author": "csds"}
+{"text": "没收到货，怎么显示已完成呢，送哪里去了", "intent": "order_logistics", "author": "csds"}
+{"text": "你好订单怎么改送货时间", "intent": "order_logistics", "author": "csds"}
+{"text": "我那个订单还没发货，能帮我取消吗?", "intent": "order_logistics", "note": "见指南第 6 条：取消或拦截标 order_logistics，取消后问退款标 refund", "author": "csds"}
+{"text": "这个订单里面的电源我不要了、，你帮我取消掉", "intent": "order_logistics", "note": "收货前部分取消，见指南第 6 条", "author": "csds"}
+{"text": "系统自动处理的?我还没跟快递员说拒收呢", "intent": "order_logistics", "note": "见指南第 7 条：能否拒收、怎么拒收标 order_logistics，拒收后问退款标 refund", "author": "csds"}
+{"text": "我申请了退款，麻烦处理一下，别发货给我就行。家里没有人能收货了", "intent": "refund", "author": "csds", "note": "见指南第 6、7 条：诉求是退款"}
+{"text": "没收到货就被签收了还没法申请售后，那怎么申请退款页面也没有", "intent": "refund", "author": "csds", "note": "见指南第 6、7 条：诉求是退款"}
+{"text": "那是不是拒收了还要扣回运费的", "intent": "refund", "note": "见指南第 6、7 条：诉求是退款", "author": "csds"}
+{"text": "就是不会我拒收了。然后这边显示到时间自动签收吧。", "intent": "order_logistics", "note": "见指南第 6、7 条：诉求是退款", "author": "csds"}
+{"text": "退款到了能通知我吗", "intent": "refund", "history": [{"role": "user", "content": "严重影响了我的购物心情，谢谢你了"}, {"role": "assistant", "content": "真的很抱歉亲"}, {"role": "user", "content": "十分感谢"}, {"role": "assistant", "content": "但是请您放心这边已经帮您操作了，等待退款就可以了，请问还有其他还可以帮到您的吗?"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "就是我是货到付款，然后申请退货了，这钱是怎么退给我?", "intent": "refund", "author": "csds"}
+{"text": "这个订单退款大概什么时候到账", "intent": "refund", "author": "csds"}
+{"text": "那能不能按原支付方式退回", "intent": "refund", "author": "csds"}
+{"text": "什么申请退款", "intent": "refund", "author": "csds"}
+{"text": "我想退单，怎么退", "intent": "refund", "author": "csds"}
+{"text": "昨天买了个手机，因为已经发货，现在不能申请退款，，那我想退了，怎么弄?", "intent": "refund", "author": "csds"}
+{"text": "这个显卡自从买了就有问题，然后我跟客服沟通无果然后他说升级主管处理，主管直接打电话就只说不给退", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "我申请退单了你这边审核一下，审核需要时间，是吗", "intent": "refund", "author": "csds"}
+{"text": "您好!我想问一下，我的换货是等着上门换新吗", "intent": "refund", "author": "csds"}
+{"text": "什么时候能换", "intent": "refund", "history": [{"role": "assistant", "content": "/这边帮您咨询一下"}, {"role": "user", "content": "好的"}, {"role": "assistant", "content": "还请您稍等，这边帮您申请售后服务单给您上门换新可以吗?"}, {"role": "user", "content": "可以"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "我刚申请的换货改成退货", "intent": "refund", "author": "csds"}
+{"text": "质保多久", "intent": "refund", "note": "边界：问保修多久是售后，问食品保质期是售前咨询", "author": "csds"}
+{"text": "玻璃水没收到，就这玻璃水没收到", "intent": "refund", "author": "csds"}
+{"text": "少发了一个鱿鱼片", "intent": "refund", "author": "csds"}
+{"text": "您好，亲，昨天我问过一回，就想问一下补发的赠品发货没有，店家一直没有回复", "intent": "refund", "author": "csds"}
+{"text": "我要把东西寄到哪里，我申请退货没有地址", "intent": "refund", "author": "csds"}
+{"text": "快递费是我出吗，来回的快递费多少钱", "intent": "refund", "author": "csds"}
+{"text": "麻烦您安排快递小哥来取一趟", "intent": "refund", "author": "csds"}
+{"text": "当时是用的满减券，退款怎么算", "intent": "refund", "note": "边界：退的是券不是钱", "author": "csds"}
+{"text": "我有个订单的货多买了两个，我想请问这种我退两个的话是退多少钱", "intent": "refund", "author": "csds"}
+{"text": "我原来绑定的手机号码不在了怎么办", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "这个帐号绑定的手机号不用了，新的手机号怎么改", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "怎么更改登录手机号，之前卡丢失让你们客服改过一次，现在卡补回了，我想换回原来绑定的手机号", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "之前关联的电话号码以后注销了.怎么更改电话号码?", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "你好我想修改绑定手机号原手机号注销了", "intent": "account_security", "author": "csds"}
+{"text": "我想换绑新手机号", "intent": "account_security", "author": "csds"}
+{"text": "手机号码都在用，只是换绑", "intent": "account_security", "author": "csds"}
+{"text": "手机掉了没法改密码怎么办?", "intent": "account_security", "author": "csds"}
+{"text": "可以换绑吗", "intent": "account_security", "author": "csds"}
+{"text": "解绑手机号", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "不是我自己修改密码吗?", "intent": "account_security", "author": "csds"}
+{"text": "好的，登录上我再修改密码就可以了是吗", "intent": "account_security", "author": "csds"}
+{"text": "密码可以以后自己改的吧?", "intent": "account_security", "author": "csds"}
+{"text": "支付密码亲，能找回么", "intent": "account_security", "note": "见指南第 8 条：改或找回支付密码标 account_security", "author": "csds"}
+{"text": "我想问一下支付密码怎么修改啊~在忘记且不晓得银行卡卡号的情况下，但是我忘记支付密码咯，修改需要填写银行卡号", "intent": "account_security", "note": "见指南第 8 条：改或找回支付密码标 account_security", "author": "csds"}
+{"text": "怎么更改，如何修改支付密码，怎么样修改手机号码", "intent": "account_security", "note": "见指南第 8 条：改或找回支付密码标 account_security", "author": "csds"}
+{"text": "修改支付密码和修改绑定手机号码", "intent": "account_security", "author": "csds"}
+{"text": "现在不用了，怎么注销，谢谢", "intent": "account_security", "author": "csds"}
+{"text": "我需要注销账号，你好，我需要注销此账号，这个账号不用了，换另外一个账号", "intent": "account_security", "author": "csds"}
+{"text": "我想销户，", "intent": "account_security", "author": "csds"}
+{"text": "我想注销账户，以前的电话用不了了，想改新号码，新号码又被我注册了", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "注销账号", "intent": "account_security", "author": "csds"}
+{"text": "登录的时候提示存在被盗风险，让我重置密码，", "intent": "account_security", "author": "csds"}
+{"text": "就是我的号被冻结怎么办", "intent": "account_security", "author": "csds"}
+{"text": "可以取消实名认证吗", "intent": "account_security", "history": [{"role": "user", "content": "你好"}, {"role": "assistant", "content": "亲有什么可以帮您的吗"}, {"role": "user", "content": "可以取消人工服务吗，不是"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "或者你直接帮我把那个账号的身份证取消绑定也行", "intent": "account_security", "author": "csds"}
+{"text": "您帮我看看我的账号为什么还是审核不过", "intent": "account_security", "author": "csds"}
+{"text": "微信可以解绑吗", "intent": "account_security", "author": "csds"}
+{"text": "我找回密码，但是手机号码变更了", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "你好，我绑定的手机号码换了，现在登录要验证手机短信，怎么办?", "intent": "account_security", "note": "见指南第 9 条：收不到验证码标 tech_login，换绑手机标 account_security", "author": "csds"}
+{"text": "刚才下单忘了点开票了，可以到时候我自己下载电子发票吗，就帮我把U盘的开一下就好", "intent": "invoice", "author": "csds"}
+{"text": "你好，我的这三份订单可可以开一份发票吗", "intent": "invoice", "author": "csds"}
+{"text": "我想让你帮我看看我这个刚下的订单有没有发票，有没有备注开发票", "intent": "invoice", "author": "csds"}
+{"text": "但是我们需要六月份开发票，今天就要先下单", "intent": "invoice", "author": "csds"}
+{"text": "订单号:C25458的发票没开吗，有的", "intent": "invoice", "author": "csds"}
+{"text": "你好我想问下这个发票能换成公司的吗", "intent": "invoice", "author": "csds"}
+{"text": "我要开电子发票，怎么修改为公司的抬头呢", "intent": "invoice", "author": "csds"}
+{"text": "这几张订单你们帮我开了个人抬头，但我是要开公司抬头的", "intent": "invoice", "author": "csds"}
+{"text": "你好，这个发票内容能改不?", "intent": "invoice", "author": "csds"}
+{"text": "那个税号的问题，开错了", "intent": "invoice", "author": "csds"}
+{"text": "G83070，这个订单，我想改一下发票，纳税人识别号没有加上去", "intent": "invoice", "author": "csds"}
+{"text": "订单号:B64464，发票能重新开吗?货物名称不要出现“交换机”", "intent": "invoice", "author": "csds"}
+{"text": "我发票弄错了，可否开个人", "intent": "invoice", "author": "csds"}
+{"text": "发票开错可以修改吗，电子发票", "intent": "invoice", "author": "csds"}
+{"text": "订单显示未开，那么我能改下发票的抬头吗?", "intent": "invoice", "author": "csds"}
+{"text": "买的这个东西，财务说发票没有开公司税号，之前的发票要退回去吗", "intent": "invoice", "author": "csds"}
+{"text": "还能改开增值税发票吗?", "intent": "invoice", "author": "csds"}
+{"text": "这单我忘了选择开增票后面可以补开增票么，电子发票抬头是个人的可以修改为增票么", "intent": "invoice", "author": "csds"}
+{"text": "您好我已经添加增票的信息，可是今天买东西为什么开不了?", "intent": "invoice", "author": "csds"}
+{"text": "我们公司有认证过专票资格，但是后期公司名称有变更，我现在要怎么变更开票资料呢", "intent": "invoice", "author": "csds"}
+{"text": "电子发票从哪里，下载呀", "intent": "invoice", "author": "csds"}
+{"text": "我的这个发票是电子的吗，还是纸质的", "intent": "invoice", "author": "csds"}
+{"text": "现在发票都是电子发票?没有纸质的吗?", "intent": "invoice", "author": "csds"}
+{"text": "因为要报销可能需要纸质发票，打印应该不行", "intent": "invoice", "author": "csds"}
+{"text": "你好我的发票什么时候可以寄出了", "intent": "invoice", "author": "csds"}
+{"text": "你们会把发票寄过来吗?", "intent": "invoice", "author": "csds"}
+{"text": "为什么没有给开增值税发票，我的包裹里没有", "intent": "invoice", "author": "csds"}
+{"text": "发票找不到就不能保修了吗", "intent": "invoice", "author": "csds"}
+{"text": "发票我还没有收到，我现在要退货，没影响的吧?", "intent": "invoice", "author": "csds"}
+{"text": "需要哪些信息呢", "intent": "invoice", "history": [{"role": "assistant", "content": "亲亲麻烦您提供下需要更改的信息哦"}, {"role": "user", "content": "是有你们帮忙更改吗"}, {"role": "assistant", "content": "亲亲是的呢，您提供下信息妹子给您申请更改呢"}, {"role": "user", "content": "好的，稍等"}], "note": "省略句，需要上文", "author": "csds"}
+{"text": "找回密码的短信验证码接受不到，没有", "intent": "tech_login", "note": "收不到验证码，见指南第 9 条", "author": "csds"}
+{"text": "我要转人工", "intent": "human_handoff", "author": "csds"}
+{"text": "转人工客服", "intent": "human_handoff", "author": "csds"}
+{"text": "人工客服", "intent": "human_handoff", "author": "csds"}
+{"text": "人工出来", "intent": "human_handoff", "author": "csds"}
+{"text": "有人工客服吗", "intent": "human_handoff", "author": "csds"}
+{"text": "你好是人工吗", "intent": "human_handoff", "author": "csds"}
+{"text": "halo是人工吗", "intent": "human_handoff", "author": "csds"}
+{"text": "是人工客服吗", "intent": "human_handoff", "author": "csds"}
+{"text": "没人工吗", "intent": "human_handoff", "author": "csds"}
+{"text": "你是机器人还是真人", "intent": "human_handoff", "author": "csds"}
+{"text": "我是想问有没有人工", "intent": "human_handoff", "author": "csds"}
+{"text": "你这样你们有没有人工坐席好吧", "intent": "human_handoff", "author": "csds"}
+{"text": "你们人工电话什么我打电话咨询一下", "intent": "human_handoff", "author": "csds"}
+{"text": "人工客服电话给我", "intent": "human_handoff", "author": "csds"}
+{"text": "有人工电话服务吗?", "intent": "human_handoff", "author": "csds"}
+{"text": "有电话客服，吗?", "intent": "human_handoff", "author": "csds"}
+{"text": "客服热线是多少", "intent": "human_handoff", "author": "csds"}
+{"text": "或者你给我个客服电话吧，这样很费劲哦", "intent": "human_handoff", "author": "csds"}
+{"text": "我想问下，为什么有时候人工会转不进来呢", "intent": "human_handoff", "author": "csds"}
+{"text": "之前的问题，找不到你说的那个人工服务台", "intent": "human_handoff", "author": "csds"}
+{"text": "你将专员电话号码给我，我跟他说", "intent": "human_handoff", "author": "csds"}
+{"text": "就这个事情你们老是换客服，我应该怎么联系谁一下就能说明问题啊?", "intent": "human_handoff", "author": "csds"}
+{"text": "我想找一下今天上午给我打电话的那个客服，不是，我的问题是她处理的，我想问问她怎么样了", "intent": "human_handoff", "author": "csds"}
+{"text": "你是我的专属客服么?早上我问的是你给我解答的么", "intent": "human_handoff", "author": "csds"}
+{"text": "为什么上面买东西没人回我", "intent": "human_handoff", "author": "csds"}
+{"text": "站点的电话打过去关机，怎么办", "intent": "order_logistics", "author": "csds", "note": "要的是配送方电话，见指南第 10 条"}
+{"text": "打不通外卖小哥电话", "intent": "order_logistics", "note": "要的是配送方电话，见指南第 10 条", "author": "csds"}
+{"text": "这个点部的电话知道吗", "intent": "order_logistics", "history": [{"role": "user", "content": "同一个自提点，那改到不送货吧"}, {"role": "assistant", "content": "小妹这边也是无法修改的呢"}, {"role": "user", "content": "放到沈大路那个自提点，晕了，好吧"}, {"role": "assistant", "content": "要麻烦您到时候联系下派送员呢"}], "note": "要的是配送方电话，见指南第 10 条", "author": "csds"}
+{"text": "我想要长春分拨中心的电话", "intent": "order_logistics", "author": "csds", "note": "要的是配送方电话，见指南第 10 条"}
+{"text": "价保自助申请不成功，要人工帮我申请一下", "intent": "other", "author": "csds", "note": "含人工二字但诉求是价保，见指南第 10 条"}
+{"text": "价保是你们这里办理的吗，怎么申请", "intent": "other", "author": "csds", "note": "含人工二字但诉求是价保，见指南第 10 条"}
+{"text": "我要求的退货的已经三天了，产品质量非常差，自行车居然没有刹车。还说是自然现象", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "今天刚到的显示器，但是总感觉有点模糊，这个可以调一下吗?", "intent": "other", "author": "csds"}
+{"text": "我想问一下这个手机回收，是上门就验机嘛", "intent": "other", "author": "csds"}
+{"text": "你旧版读写速度能达到多少", "intent": "other", "author": "csds"}
+{"text": "是否LED都是比较容易累眼?", "intent": "other", "author": "csds"}
+{"text": "您好，我这个订单复合单笔一万的活动条件吧?", "intent": "other", "author": "csds"}
+{"text": "可不可以送点什么，怎么还需要收运费?", "intent": "other", "author": "csds"}
+{"text": "颗粒按摩和护颈枕有什么区别?", "intent": "other", "author": "csds"}
+{"text": "你好，这笔记本电脑不送电脑包和鼠标吗?", "intent": "other", "author": "csds"}
+{"text": "这会不会很容易掉出来呀", "intent": "other", "author": "csds"}
+{"text": "亲您家的拼购是个什么意思呢，也不能取消，我如果参加别人的我这边也满了能不能退一个呢", "intent": "other", "author": "csds"}
+{"text": "我想问一下这个护臀膏的功效，就能擦屁股其他的部位可以用吗，身上也可以用呗", "intent": "other", "author": "csds"}
+{"text": "可以帮我介绍一下行车轨迹和远程监控的具体作用吗亲，物联卡是什么", "intent": "other", "author": "csds"}
+{"text": "我要下单了，这个给送电脑包的吧?", "intent": "other", "author": "csds"}
+{"text": "墙上怎么安装，只要插电就能在手机上链接WIFI吗，可以倒着安装吗", "intent": "other", "author": "csds"}
+{"text": "冰晶盒怎么用", "intent": "other", "author": "csds"}
+{"text": "怎样预约安装空调", "intent": "other", "author": "csds"}
+{"text": "安装需要自己打电话预约安装?", "intent": "other", "author": "csds"}
+{"text": "请问一下定位不能更准备吗", "intent": "other", "author": "csds"}
+{"text": "能不能安装在电视机上面吗?摄像机想放在电视机上面，不会影响网络吧", "intent": "other", "author": "csds"}
+{"text": "亲，我以前voyage的充电器，这个可以用吗?", "intent": "other", "author": "csds"}
+{"text": "我的手特别干，这款有美白的效果么", "intent": "other", "author": "csds"}
+{"text": "打印机怎么安装呢?", "intent": "other", "author": "csds"}
+{"text": "这个洗衣机已经送到了，但是没有联系我安装，是不是电话号码又留错了", "intent": "other", "author": "csds"}
+{"text": "我买的洗衣机，之前跟我说要联系厂家安装，但是给的电话怎么是别的牌子的服务商啊", "intent": "other", "author": "csds"}
+{"text": "我昨天买的这个联想手机，然后面叶上有写着赠送耳机，今天到货了并没有", "intent": "refund", "author": "csds", "note": "商品缺件或故障，属售后，见指南第 3 条"}
+{"text": "我这少一袋腰果，我定的两袋。就送了一袋", "intent": "refund", "author": "csds", "note": "商品缺件或故障，属售后，见指南第 3 条"}
+{"text": "如何维修?我需要吧耳机送哪里?!需要我付邮费吗?", "intent": "refund", "author": "csds", "note": "商品缺件或故障，属售后，见指南第 3 条"}
+{"text": "买了纯净水机，一直闪灯，", "intent": "refund", "author": "csds", "note": "商品缺件或故障，属售后，见指南第 3 条"}
+{"text": "你是机器人还是真人啊", "intent": "human_handoff"}
+{"text": "给我讲个笑话", "intent": "other"}
+{"text": "你们客服一天上几个小时班", "intent": "other"}
+{"text": "你好无聊啊，就会说套话", "intent": "other", "note": "含“你好”但不是打招呼，规则会误判成 greeting"}
+{"text": "你们公司还招人吗", "intent": "other"}
+{"text": "你们工资一个月多少", "intent": "other"}
+{"text": "面试完一周了还没通知，是不是没戏了", "intent": "other", "note": "抱怨语气，但诉求是招聘，和客服业务无关"}
+{"text": "明天北京下雨吗", "intent": "other"}
+{"text": "帮我算下我还有多少天退休", "intent": "other", "note": "含“退”字，但和退货退款无关"}
+{"text": "世界杯今晚谁踢谁", "intent": "other"}
+{"text": "你们老板是谁", "intent": "other"}
+{"text": "我们有个账号密码好像忘记了，怎样申请找回呢", "intent": "tech_login", "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security", "author": "csds"}
+{"text": "我密码忘了😭😭😭", "intent": "tech_login", "history": [{"role": "assistant", "content": "那您直接登录就可以了"}, {"role": "user", "content": "OK OK谢谢谢谢"}, {"role": "assistant", "content": "请问还有其他还可以帮到您的吗?"}, {"role": "user", "content": "emmm，那啥"}], "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security；省略句，需要上文", "author": "csds"}
+{"text": "不记得密码了", "intent": "tech_login", "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security", "author": "csds"}
+{"text": "忘记账户登录密码", "intent": "tech_login", "author": "csds"}
+{"text": "我的密码忘记了，但是修改密码需要填写收货人姓名，可我还没收过货，一直错误", "intent": "tech_login", "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security", "author": "csds"}
+{"text": "记得密码要是忘了自己也可以改吧", "intent": "tech_login", "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security", "author": "csds"}
+{"text": "登录不了怎么办?输入手机号也收不到验证码", "intent": "tech_login", "author": "csds"}
+{"text": "手机收不到验证码", "intent": "tech_login", "author": "csds"}
+{"text": "输入手机号也收不到验证码", "intent": "tech_login", "author": "csds"}
+{"text": "我收不到验证码", "intent": "tech_login", "author": "csds"}
+{"text": "还在使用，但是现在收不到验证码", "intent": "tech_login", "author": "csds"}
+{"text": "以前经常登不上，只要一周左右不登录，密码就用不成了，后来客服给了新密码才好了", "intent": "tech_login", "author": "csds"}
+{"text": "就是PC端登录不了", "intent": "tech_login", "author": "csds"}
+{"text": "额，我这会儿手机不在身边，电脑上登QQ需要验证，登不上啊", "intent": "tech_login", "author": "csds"}
+{"text": "QQ扫码都登录不了呢", "intent": "tech_login", "author": "csds"}
+{"text": "现在直接登不上", "intent": "tech_login", "author": "csds"}
+{"text": "登录不了呀", "intent": "tech_login", "author": "csds"}
+{"text": "收不到验证码登录", "intent": "tech_login", "author": "csds"}
+{"text": "找回密码怎么弄，不可以", "intent": "tech_login", "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security", "author": "csds"}
+{"text": "校园用户怎么登录啊，我刚刚在学校书店那里注册了", "intent": "tech_login", "author": "csds"}
+{"text": "找回密码时以前那个手机号已经不用了", "intent": "account_security", "note": "手机已换需改绑或支付密码，见指南第 8、9 条", "author": "csds"}
+{"text": "我注册的手机号码停机了，现在登录密码忘了", "intent": "account_security", "note": "手机已换需改绑或支付密码，见指南第 8、9 条", "author": "csds"}
+{"text": "我原来的手机号.不用了.收不到验证码..现在要怎么样修改密码", "intent": "account_security", "author": "csds", "note": "手机已换需改绑或支付密码，见指南第 8、9 条"}
+{"text": "你好，亲，以前的号码没用了，登录不上，可以改号码吗", "intent": "account_security", "author": "csds", "note": "手机已换需改绑或支付密码，见指南第 8、9 条"}
+{"text": "绑定的手机号不用了，收不到验证码怎么半?", "intent": "account_security", "author": "csds", "note": "手机已换需改绑或支付密码，见指南第 8、9 条"}
+{"text": "我忘记支付密码了", "intent": "account_security", "note": "手机已换需改绑或支付密码，见指南第 8、9 条", "author": "csds"}
+{"text": "怎么非要选时间才能提交哟，我无法提交也", "intent": "tech_error", "author": "csds"}
+{"text": "提交不了订单，因此没有订单号", "intent": "tech_error", "author": "csds"}
+{"text": "我为什么加不了购物车啊?加不了购物车我怎么保存", "intent": "tech_error", "author": "csds"}
+{"text": "您好我上传图片怎么看不到评论了", "intent": "tech_error", "author": "csds"}
+{"text": "有个东西我买了两单，已经完成了，为什么不能评价?", "intent": "tech_error", "author": "csds"}
+{"text": "我出的两件物品怎么APP看不到进度啊", "intent": "tech_error", "author": "csds"}
+{"text": "我下了个订单，没付款，然后不见了，请问手机号的订单在哪找?", "intent": "tech_error", "author": "csds"}
+{"text": "加载不了。。。", "intent": "tech_error", "author": "csds"}
+{"text": "什么都点不了", "intent": "tech_error", "author": "csds"}
+{"text": "下面提交点不了", "intent": "tech_error", "author": "csds"}
+{"text": "申请退货提交不了", "intent": "tech_error", "author": "csds"}
+{"text": "我申请了，他让我点银信息，我点了老点不了", "intent": "tech_error", "author": "csds"}
+{"text": "有显示增票但是我点不了", "intent": "tech_error", "author": "csds"}
+{"text": "没想到这么复杂。显示完成又没有完成，这个应该算bug", "intent": "tech_error", "author": "csds"}
+{"text": "为什么我的号下这个尿不湿下不了呢", "intent": "tech_error", "author": "csds"}
+{"text": "为啥不能购买图书呢、", "intent": "tech_error", "author": "csds"}
+{"text": "不能下单吗", "intent": "tech_error", "author": "csds"}
+{"text": "这个订单我根本就没买，怎么会有订单呢", "intent": "account_security", "author": "csds", "note": "不是本人下的订单，见指南 account_security 定义"}
+{"text": "这个已经没货的了，重新下单下不了", "intent": "other", "author": "csds", "note": "业务状态不允许，不是故障，见指南第 11 条"}
+{"text": "那个轮胎我少买了一个，现在买怎么买不了了??那怎么办?", "intent": "other", "author": "csds", "note": "业务状态不允许，不是故障，见指南第 11 条"}
+{"text": "苹果15 升级ios后你们app用一会儿就崩", "intent": "tech_error"}
+{"text": "又闪了", "intent": "tech_error", "history": [{"role": "user", "content": "你们app老是自己关掉"}, {"role": "assistant", "content": "亲，麻烦您清理一下缓存后再试试哦"}], "note": "省略句，需要上文"}
+{"text": "商品详情页打开是一片空白", "intent": "tech_error"}
+{"text": "提交订单的按钮是灰的，点不动", "intent": "tech_error", "note": "按钮失灵，不是没货限购；见指南第 11 条"}
+{"text": "提交的时候报500", "intent": "tech_error"}
+{"text": "页面显示502 bad gateway", "intent": "tech_error"}
+{"text": "打开链接是404", "intent": "tech_error"}
+{"text": "503", "intent": "tech_error", "history": [{"role": "user", "content": "你们网站打不开了"}]}
+{"text": "你们的服务太差了", "intent": "complaint", "author": "csds"}
+{"text": "快递员服务太差", "intent": "complaint", "author": "csds"}
+{"text": "难道是忽悠消费者的?", "intent": "complaint", "author": "csds"}
+{"text": "韵达的服务太差劲了👎!", "intent": "complaint", "author": "csds"}
+{"text": "上面客服真忽悠客户呀", "intent": "complaint", "author": "csds"}
+{"text": "请你们查询清楚情况，不要把配送失误作为超过配送区的借口来随便忽悠我们客户", "intent": "complaint", "author": "csds"}
+{"text": "你们不负责监督吗?", "intent": "complaint", "author": "csds"}
+{"text": "你们这个购物体验太差了吧，买个奶都买不了呢", "intent": "complaint", "author": "csds"}
+{"text": "你们这是忽悠", "intent": "complaint", "author": "csds"}
+{"text": "卖家一点都不负责任", "intent": "complaint", "author": "csds"}
+{"text": "晕，你们这bug系统就这么忽悠客户", "intent": "complaint", "author": "csds"}
+{"text": "你们这样的配送太差劲了", "intent": "complaint", "author": "csds"}
+{"text": "这个快递公司真太差劲了", "intent": "complaint", "author": "csds"}
+{"text": "哎!又被忽悠了", "intent": "complaint", "author": "csds"}
+{"text": "好评都是刷的，坑人", "intent": "complaint", "author": "csds"}
+{"text": "我觉得他在忽悠我", "intent": "complaint", "author": "csds"}
+{"text": "他们根本就是不负责任拖着我", "intent": "complaint", "author": "csds"}
+{"text": "意思就是你们这个不负责任了?", "intent": "complaint", "author": "csds"}
+{"text": "这个服务太差了", "intent": "complaint", "author": "csds"}
+{"text": "真的是无语", "intent": "complaint", "author": "csds"}
+{"text": "真tm无语", "intent": "complaint", "author": "csds"}
+{"text": "还是不负责了", "intent": "complaint", "author": "csds"}
+{"text": "不要再忽悠人", "intent": "complaint", "author": "csds"}
+{"text": "这不是坑人么", "intent": "complaint", "author": "csds"}
+{"text": "人工审核不就鼠标一点击的事，少忽悠我", "intent": "complaint", "author": "csds"}
+{"text": "我不接受检测这种事情，不可能一直给你们这种差劲的服务调整我自己的时间，我只要求退货，别的没商量，服务太差了", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "这个冰箱太差了，很响，就退了", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "还是有问题，给公司买的，公司决定退货，这个牌子品控太差，买别的", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "之前是申请的换货，通过了审核，我想知道能不能改成退货，体验太差了", "intent": "refund", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "还忽悠说已经发货只不过没找到快递单号，然后换了一个客服，另外个客服说并没有发货", "intent": "order_logistics", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "无语了，他到底还有货没", "intent": "order_logistics", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "我都付过款了，您们从采购中变成无货是不是有点忽悠我了", "intent": "order_logistics", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "找了个派件员电话还不接，无语", "intent": "order_logistics", "author": "csds", "note": "带情绪的具体诉求，见指南第 1 条"}
+{"text": "你好", "intent": "greeting", "author": "csds"}
+{"text": "您好", "intent": "greeting", "author": "csds"}
+{"text": "有人吗?", "intent": "greeting", "author": "csds"}
+{"text": "hello?", "intent": "greeting", "author": "csds"}
+{"text": "在不在", "intent": "greeting", "author": "csds"}
+{"text": "有人在吗", "intent": "greeting", "author": "csds"}
+{"text": "你好啊", "intent": "greeting", "author": "csds"}
+{"text": "在吗???", "intent": "greeting", "author": "csds"}
+{"text": "你好吗?", "intent": "greeting", "author": "csds"}
+{"text": "hi", "intent": "greeting", "author": "csds"}
+{"text": "嗨。。。", "intent": "greeting", "author": "csds"}
+{"text": "哈喽，", "intent": "greeting", "author": "csds"}
