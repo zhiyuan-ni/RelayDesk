@@ -24,6 +24,7 @@ class LLMClient:
             max_retries=1,  # 网络抖动时 SDK 自动重试 1 次
         )
         self.model = cfg.llm_model
+        self._enable_thinking = cfg.llm_enable_thinking
 
     async def chat(
         self,
@@ -51,6 +52,9 @@ class LLMClient:
         }
         if tools:
             kwargs["tools"] = tools
+        if self._enable_thinking is not None:
+            # extra_body 里的字段会原样放进请求体，用来传 OpenAI 标准协议之外的厂商参数
+            kwargs["extra_body"] = {"enable_thinking": self._enable_thinking}
 
         # await 的含义：在等网络返回的这几秒里，把 CPU 让给别的请求
         resp = await self._client.chat.completions.create(**kwargs)
