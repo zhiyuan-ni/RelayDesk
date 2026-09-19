@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 from app.agents.tools import ToolContext, ToolSpec, pick_tools
 
@@ -103,10 +103,11 @@ async def execute_tool_call(
 
 
 class BaseAgent:
-    def __init__(self, llm, profile: AgentProfile):
+    def __init__(self, llm, profile: AgentProfile, shared_tools: Optional[dict[str, ToolSpec]] = None):
         self._llm = llm
         self.profile = profile
-        self._tools = pick_tools(profile.tool_names)
+        # 工具 = 角色专属的白名单工具 + 所有 Agent 共享的工具，例如知识库检索
+        self._tools = {**pick_tools(profile.tool_names), **(shared_tools or {})}
 
     async def run(self, message: str, ctx: ToolContext, background: str = "") -> AgentReply:
         """处理一条用户消息。background 是意图、实体、记忆等背景信息的文本。"""

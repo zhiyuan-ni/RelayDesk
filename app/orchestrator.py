@@ -9,12 +9,12 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 from app.agents.base import AgentReply, BaseAgent
 from app.agents.escalation import EscalationAgent
 from app.agents.profiles import PROFILES
-from app.agents.tools import ToolContext
+from app.agents.tools import ToolContext, ToolSpec
 from app.intent.recognizer import IntentRecognizer
 from app.intent.schema import IntentResult
 from app.routing.router import RoutingDecision, decide
@@ -82,10 +82,12 @@ async def run_agents(
     return replies
 
 class Orchestrator:
-    def __init__(self, llm):
+    def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None):
         self._llm = llm
         self._recognizer = IntentRecognizer(llm)
-        self._agents: dict[str, Any] = {name: BaseAgent(llm, p) for name, p in PROFILES.items()}
+        self._agents: dict[str, Any] = {
+            name: BaseAgent(llm, profile, shared_tools) for name, profile in PROFILES.items()
+        }
         self._escalation = EscalationAgent()
 
     async def handle(self, message: str, user_id: str) -> OrchestratorResult:
