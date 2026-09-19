@@ -20,6 +20,7 @@ class TurnExpectation:
     contain_any: list[str] = field(default_factory=list)  # 回复至少包含其中一个
     contain_all: list[str] = field(default_factory=list)  # 回复必须全部包含
     contain_none: list[str] = field(default_factory=list) # 回复一个都不能包含
+    agents: list[str] = field(default_factory=list)       # 主辅不限，这些 Agent 都必须参与。复合问题用它，不写死谁主谁辅
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "TurnExpectation":
@@ -83,6 +84,10 @@ def check_turn(outcome: TurnOutcome, expect: TurnExpectation) -> list[str]:
     for s in expect.contain_all:
         if s not in outcome.response:
             failures.append(f"期望回复包含 {s}，实际回复没有")
+    involved = [outcome.primary] + outcome.supporting
+    for agent in expect.agents:
+        if agent not in involved:
+            failures.append(f"Agent {agent} 应当参与，实际参与的是 {involved}")
     for s in expect.contain_none:
         if s in outcome.response:
             failures.append(f"期望回复不包含 {s}，实际回复包含了")

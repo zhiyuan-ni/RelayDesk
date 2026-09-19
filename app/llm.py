@@ -26,6 +26,21 @@ class LLMClient:
         self.model = cfg.llm_model
         self._enable_thinking = cfg.llm_enable_thinking
 
+    def for_model(self, model: str) -> "LLMClient":
+        """同一个连接池、不同的模型。model 为空时返回自己。
+
+        某些环节只做分类或排序，用小模型又快又便宜。复用底层客户端是为了共享连接池，
+        否则每个环节各自冷启动连接，之前实测冷连接要多等 5 秒。
+        """
+        if not model or model == self.model:
+            return self
+        other = object.__new__(LLMClient)          # 跳过 __init__，不再新建客户端
+        other._client = self._client
+        other.model = model
+        # 思考开关是 Qwen 系列的参数，换成别家模型时不能带上，否则可能报错
+        other._enable_thinking = self._enable_thinking if model.startswith("qwen") else None
+        return other
+
     @property
     def client(self) -> AsyncOpenAI:
         """底层客户端。向量模型复用它，共享同一个连接池，原因见 Embedder。"""

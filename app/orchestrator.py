@@ -95,10 +95,11 @@ async def run_agents(
     return replies
 
 class Orchestrator:
-    def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None, memory=None):
+    def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None, memory=None,
+                 intent_llm=None):
         self._llm = llm
         self._memory = memory   # 为 None 时系统无记忆，每条消息独立处理
-        self._recognizer = IntentRecognizer(llm)
+        self._recognizer = IntentRecognizer(intent_llm or llm)
         self._agents: dict[str, Any] = {
             name: BaseAgent(llm, profile, shared_tools) for name, profile in PROFILES.items()
         }
@@ -230,13 +231,13 @@ class Orchestrator:
         drafts = "\n\n".join(f"【{r.agent} 的回复】\n{r.content}" for r in good)
         prompt = (
             "下面是几位客服同事针对同一条用户消息分别写的回复草稿，请合并成一条给用户的最终回复。\n"
-            "要求：第一份草稿对应用户的主要问题，放在前面；去掉重复的寒暄和重复内容；"
+            "要求：合并后不超过 320 字，不要用标题；第一份草稿对应用户的主要问题，放在前面；去掉重复的寒暄和重复内容；"
             "不得新增草稿里没有的事实、金额或承诺；草稿之间有矛盾时，说明需要进一步核实；"
             "不要提及有多位同事或内部分工。\n\n"
             f"用户消息：{message}\n\n{drafts}"
         )
         try:
-            merged = await self._llm.chat_text(prompt, temperature=0.1, max_tokens=1000)
+            merged = await self._llm.chat_text(prompt, temperature=0.1, max_tokens=650)
             if merged:
                 return merged
         except Exception as ex:

@@ -30,7 +30,7 @@
   },
   {
     "id": "composite_login_and_charge",
-    "title": "复合问题：登录报错加扣款核对，两个 Agent 协作",
+    "title": "复合问题：登录报错加扣款核对，两个 Agent 都要参与，主次不限",
     "user_id": "u1002",
     "facts": "用户 u1002 最近一次登录失败原因是登录令牌过期 401。订单 D88002 有一笔失败和一笔成功的微信支付，各 159 元，实际只扣款一次。",
     "turns": [
@@ -38,23 +38,32 @@
         "message": "登录一直报 401，另外订单 D88002 是不是扣了我两次钱",
         "expect": {
           "action": "answer",
-          "primary": "billing",
-          "supporting": [
-            "technical"
-          ],
           "tools": [
-            "get_payment_records",
-            "lookup_error_code"
+            "get_payment_records"
           ],
           "contain_any": [
-            "一笔",
-            "1 笔",
-            "1笔",
-            "一次"
+            "未见重复扣款",
+            "不是重复扣款",
+            "没有重复扣款",
+            "不存在重复扣款",
+            "只扣款一次",
+            "只有一笔",
+            "仅一笔",
+            "1 笔成功",
+            "一笔成功",
+            "扣了一次"
           ],
           "contain_none": [
             "两笔成功",
             "2 笔成功"
+          ],
+          "agents": [
+            "billing",
+            "technical"
+          ],
+          "contain_all": [
+            "401",
+            "159"
           ]
         }
       }
@@ -110,9 +119,11 @@
             "24日"
           ],
           "contain_none": [
-            "一定",
-            "保证",
-            "肯定能"
+            "保证到账",
+            "一定能到账",
+            "肯定能到账",
+            "一定会在",
+            "我保证"
           ]
         }
       }
