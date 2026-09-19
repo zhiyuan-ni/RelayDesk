@@ -1,0 +1,38 @@
+{
+  "orders": {
+    "A12345": {"user_id": "u1001", "item": "机械键盘 K87", "amount": 399.0, "status": "运输中",
+               "paid_at": "2026-09-14 10:21", "shipped_at": "2026-09-15 09:00",
+               "logistics": {"carrier": "顺丰", "tracking_no": "SF1029384756", "last_update": "2026-09-17 18:40 到达上海转运中心"}},
+    "B20250917": {"user_id": "u1001", "item": "年度会员", "amount": 198.0, "status": "已完成",
+               "paid_at": "2026-09-17 20:05", "shipped_at": null, "logistics": null},
+    "C77001": {"user_id": "u1002", "item": "降噪耳机 Q3", "amount": 899.0, "status": "已签收",
+               "paid_at": "2026-09-01 12:30", "shipped_at": "2026-09-02 08:10",
+               "logistics": {"carrier": "京东", "tracking_no": "JD5566778899", "last_update": "2026-09-04 14:22 已签收"}},
+    "D88002": {"user_id": "u1002", "item": "显示器支架", "amount": 159.0, "status": "待发货",
+               "paid_at": "2026-09-18 23:10", "shipped_at": null, "logistics": null},
+    "E90003": {"user_id": "u1003", "item": "蓝牙音箱 M2", "amount": 259.0, "status": "退款处理中",
+               "paid_at": "2026-09-08 16:45", "shipped_at": "2026-09-09 10:00",
+               "logistics": {"carrier": "中通", "tracking_no": "ZT4433221100", "last_update": "2026-09-16 11:05 退货已入库"}}
+  },
+  "payments": [
+    {"payment_id": "P001", "order_id": "A12345", "amount": 399.0, "channel": "微信支付", "status": "成功", "time": "2026-09-14 10:21"},
+    {"payment_id": "P002", "order_id": "B20250917", "amount": 198.0, "channel": "支付宝", "status": "成功", "time": "2026-09-17 20:05"},
+    {"payment_id": "P003", "order_id": "B20250917", "amount": 198.0, "channel": "支付宝", "status": "成功", "time": "2026-09-17 20:06"},
+    {"payment_id": "P004", "order_id": "C77001", "amount": 899.0, "channel": "银行卡", "status": "成功", "time": "2026-09-01 12:30"},
+    {"payment_id": "P005", "order_id": "D88002", "amount": 159.0, "channel": "微信支付", "status": "失败", "time": "2026-09-18 23:08"},
+    {"payment_id": "P006", "order_id": "D88002", "amount": 159.0, "channel": "微信支付", "status": "成功", "time": "2026-09-18 23:10"},
+    {"payment_id": "P007", "order_id": "E90003", "amount": 259.0, "channel": "支付宝", "status": "成功", "time": "2026-09-08 16:45"}
+  ],
+  "refunds": [
+    {"refund_id": "R001", "order_id": "E90003", "amount": 259.0, "status": "审核通过，退款中", "applied_at": "2026-09-15 09:30", "expected_by": "2026-09-24"}
+  ],
+  "invoices": [
+    {"order_id": "C77001", "title": "上海某某科技有限公司", "status": "已开具", "issued_at": "2026-09-05"}
+  ],
+  "login_events": [
+    {"user_id": "u1001", "time": "2026-09-18 08:12", "result": "成功", "device": "iPhone 15", "location": "上海"},
+    {"user_id": "u1001", "time": "2026-09-19 02:47", "result": "失败", "device": "未知 Android 设备", "location": "境外", "reason": "密码错误"},
+    {"user_id": "u1001", "time": "2026-09-19 02:48", "result": "失败", "device": "未知 Android 设备", "location": "境外", "reason": "密码错误"},
+    {"user_id": "u1002", "time": "2026-09-19 09:30", "result": "失败", "device": "Chrome / macOS", "location": "北京", "reason": "登录令牌过期 401"}
+  ]
+}
