@@ -65,12 +65,12 @@ async def execute_tool_call(
         trace["latency_ms"] = round((time.monotonic() - t0) * 1000, 1)
         return trace
 
-    # 白名单
+    # 1. 白名单
     if name not in tools:
         trace["error"] = f"工具 {name} 不在当前 Agent 的白名单中"
         return done()
 
-    # 解析 JSON
+    # 2. 解析 JSON
     if raw_args:
         try:
             args = json.loads(raw_args)      # 字符串 -> Python 对象
@@ -82,13 +82,13 @@ async def execute_tool_call(
             return done()
         trace["args"] = args
 
-    # 检查必填参数
+    # 3. 检查必填参数
     for p in tools[name].parameters["required"]:
         if p not in trace["args"]:
             trace["error"] = f"缺少必填参数名 {p}"
             return done()
 
-    # 调用工具函数
+    # 4. 调用工具函数
     try:
         result = tools[name].handler(ctx, trace["args"])
         if inspect.isawaitable(result):
