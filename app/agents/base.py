@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from app.agents.tools import ToolContext, ToolSpec, pick_tools
+from app.observability import tracer
+from app.observability.stats import stats
 
 logger = logging.getLogger(__name__)
 
@@ -143,10 +145,11 @@ class BaseAgent:
             # 最后一轮不再提供工具，逼模型用已有信息作答。
             # 如果在这里直接报错，前几轮已经查到的信息就全部浪费了。
             offer_tools = tool_defs if round_no < MAX_TOOL_ROUNDS else None
-            msg = await self._llm.chat(
-                messages, system=self.profile.system_prompt(), tools=offer_tools,
-                temperature=self.profile.temperature, max_tokens=self.profile.max_tokens,
-            )
+            async with tracer.span(f"llm:{self.profile.name}", round=round_no + 1):
+                msg = await self._llm.chat(
+                    messages, system=self.profile.system_prompt(), tools=offer_tools,
+                    temperature=self.profile.temperature, max_tokens=self.profile.max_tokens,
+                )
             if not msg.tool_calls:
                 return (msg.content or "").strip()
 
@@ -158,7 +161,9 @@ class BaseAgent:
                                for c in msg.tool_calls],
             })
             for call in msg.tool_calls:
-                trace = await execute_tool_call(self._tools, call.function.name, call.function.arguments, ctx)
+                async with tracer.span(f"tool:{call.function.name}"):
+                    trace = await execute_tool_call(self._tools, call.function.name, call.function.arguments, ctx)
+                stats.record("tool", call.function.name, trace["latency_ms"], trace["success"])
                 traces.append(trace)
                 # 失败也要告诉模型，它才能换个办法或如实告知用户
                 payload = trace["data"] if trace["success"] else {"error": trace["error"]}

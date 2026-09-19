@@ -16,6 +16,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+from app.observability import tracer
+
 logger = logging.getLogger(__name__)
 
 RECALL_K = 5       # 每个查询召回多少候选。召回阶段宁多勿漏
@@ -114,7 +116,8 @@ class Retriever:
     async def _recall(self, queries: list[str]) -> tuple[list[list[dict]], list[str]]:
         if not queries:
             return [], []
-        results = await asyncio.gather(*[self._kb.search(q, RECALL_K) for q in queries], return_exceptions=True)
+        async with tracer.span("kb:recall", queries=len(queries)):
+            results = await asyncio.gather(*[self._kb.search(q, RECALL_K) for q in queries], return_exceptions=True)
         return [r for r in results if not isinstance(r, BaseException)], queries
 
     async def _rewrite_then_recall(self, query: str) -> tuple[list[list[dict]], list[str]]:
@@ -146,8 +149,9 @@ class Retriever:
             "只返回由片段序号组成的 JSON 数组，例如 [2, 0, 3]"
         )
         try:
-            raw = await asyncio.wait_for(
-                self._llm.chat_text(prompt, temperature=0.0, max_tokens=100), timeout=self._rerank_timeout_s)
+            async with tracer.span("kb:rerank", candidates=len(candidates)):
+                raw = await asyncio.wait_for(
+                    self._llm.chat_text(prompt, temperature=0.0, max_tokens=100), timeout=self._rerank_timeout_s)
             return apply_order(candidates, parse_json_list(raw), top_k), True
         except Exception as ex:
             logger.warning("重排失败，使用向量顺序: %s", ex)
