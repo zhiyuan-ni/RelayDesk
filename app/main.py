@@ -11,9 +11,12 @@ from app.config import settings
 from app.knowledge.embedder import Embedder
 from app.knowledge.kb import KnowledgeBase
 from app.knowledge.retriever import Retriever
-from app.knowledge.tool import build_knowledge_tool
+from app.knowledge.tool import build_knowledge_tool, knowledge_fallback
 from app.llm import LLMClient
 from app.orchestrator import Orchestrator
+from app.reliability.breaker import CircuitBreaker
+from app.reliability.cache import TTLCache
+from app.reliability.guard import guarded
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -22,16 +25,25 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 编排器全局只建一个。它内部持有 Agent 等对象，后面还会挂上统计和记忆，不能每个请求新建。
-    kb = KnowledgeBase(Embedder(settings), settings.kb_path)
+    llm = LLMClient(settings)
+    kb = KnowledgeBase(Embedder(settings, client=llm.client), settings.kb_path)
     try:
         state = await kb.ensure_ready()   # 首次启动导入文档；换了向量模型则重建；否则复用
     except Exception as ex:
         # 让启动直接失败并给出可读的原因，好过带着坏配置运行
         raise RuntimeError(f"知识库初始化失败，请检查 EMBEDDING_MODEL={settings.embedding_model!r} 是否正确: {ex}") from ex
     logger.info("知识库就绪: %s, 片段数 %d, 向量模型 %s", state, await kb.count(), settings.embedding_model)
-    llm = LLMClient(settings)
-    retriever = Retriever(kb, llm, rewrite=settings.retrieval_rewrite, rerank=settings.retrieval_rerank)
-    tool = build_knowledge_tool(retriever)
+    retriever = Retriever(kb, llm, rewrite=settings.retrieval_rewrite, rerank=settings.retrieval_rerank,
+                          rerank_timeout_s=settings.kb_rerank_timeout_s)
+    # 知识库检索依赖两个外部接口，延迟波动大，所以包上缓存、熔断和超时。订单等本地工具不需要
+    tool, kb_stats = guarded(
+        build_knowledge_tool(retriever),
+        timeout_s=settings.kb_timeout_s,
+        fallback=knowledge_fallback,
+        cache=TTLCache(settings.kb_cache_ttl_s),
+        breaker=CircuitBreaker(settings.kb_breaker_failures, settings.kb_breaker_recovery_s),
+    )
+    app.state.kb_stats = kb_stats
 
     app.state.kb = kb
     app.state.retriever = retriever

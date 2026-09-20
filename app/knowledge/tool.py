@@ -32,3 +32,13 @@ def build_knowledge_tool(retriever) -> ToolSpec:
         },
         handler=search_knowledge_base,
     )
+
+
+def knowledge_fallback(args: dict[str, Any]) -> dict[str, Any]:
+    """检索不可用时交给模型的降级结果。关键是明确告诉它不要凭记忆编造政策。"""
+    return {
+        "found": False,
+        "degraded": True,
+        "message": "知识库暂时不可用。请如实告诉用户目前无法查询具体规则，不要凭印象给出政策、时效或金额，"
+                   "并建议用户稍后再试，或回复「转人工」。",
+    }

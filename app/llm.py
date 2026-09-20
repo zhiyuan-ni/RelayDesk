@@ -26,6 +26,11 @@ class LLMClient:
         self.model = cfg.llm_model
         self._enable_thinking = cfg.llm_enable_thinking
 
+    @property
+    def client(self) -> AsyncOpenAI:
+        """底层客户端。向量模型复用它，共享同一个连接池，原因见 Embedder。"""
+        return self._client
+
     async def chat(
         self,
         messages: list[dict[str, Any]],

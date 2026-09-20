@@ -105,3 +105,15 @@ async def test_one_failed_recall_does_not_break_the_rest():
     llm = FakeLLM(variants=["坏查询", "两步验证怎么恢复"], order=[0])
     r = await Retriever(FakeKB(), llm).retrieve(Q)
     assert r.hits and r.hits[0]["section"] == "两步验证"
+
+
+async def test_slow_rerank_times_out_but_recall_results_survive():
+    import asyncio
+
+    class SlowLLM:
+        async def chat_text(self, prompt, **kwargs):
+            await asyncio.sleep(5)
+            return "[1, 0]"
+
+    r = await Retriever(FakeKB(), SlowLLM(), rewrite=False, rerank_timeout_s=0.05).retrieve(Q, top_k=2)
+    assert not r.reranked and [h["section"] for h in r.hits] == ["短信验证码", "两步验证"] and r.latency_ms < 1000
