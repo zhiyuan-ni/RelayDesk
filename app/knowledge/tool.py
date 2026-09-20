@@ -13,12 +13,13 @@ from app.agents.tools import ToolContext, ToolSpec
 TOOL_NAME = "search_knowledge_base"
 
 
-def build_knowledge_tool(kb) -> ToolSpec:
+def build_knowledge_tool(retriever) -> ToolSpec:
     async def search_knowledge_base(ctx: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
-        hits = await kb.search(str(args["query"]), top_k=4)
-        if not hits:
+        result = await retriever.retrieve(str(args["query"]), top_k=4)
+        if not result.hits:
             return {"found": False, "message": "知识库中没有找到相关内容，请如实告知用户，不要编造政策"}
-        return {"found": True, "results": hits}
+        # 只把片段内容交给模型。改写出的查询、候选数量这些调试信息对回答没有帮助，只会浪费 token
+        return {"found": True, "results": result.hits}
 
     return ToolSpec(
         name=TOOL_NAME,
