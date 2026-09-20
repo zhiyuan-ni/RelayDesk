@@ -1,5 +1,29 @@
-# 本地开发依赖。目前只有 Redis，阶段 6 会把应用本身也加进来。
+# 一条命令拉起整套：docker compose up -d --build
+# 只起依赖（本地开发时用）：docker compose up -d redis
 services:
+  app:
+    build: .
+    container_name: relaydesk-app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"   # 本机已有服务占 8000 时可用 APP_PORT 改映射
+    env_file: .env                       # 密钥和模型配置从这里读，文件不进仓库
+    environment:
+      REDIS_URL: redis://redis:6379/0    # 容器里 Redis 的地址是服务名，不是 localhost
+      KB_PATH: /app/data/chroma
+      # 容器访问不到宿主机的 127.0.0.1。需要走代理时在 .env 里设 APP_HTTPS_PROXY=http://host.docker.internal:7890，
+      # 并在代理软件里允许局域网连接
+      HTTPS_PROXY: ${APP_HTTPS_PROXY:-}
+      HTTP_PROXY: ${APP_HTTPS_PROXY:-}
+      # 本机地址和 Redis 不能走代理，否则健康检查会被送去代理并得到 502
+      NO_PROXY: 127.0.0.1,localhost,redis
+      no_proxy: 127.0.0.1,localhost,redis
+    volumes:
+      - app-data:/app/data                 # 向量库和长期记忆持久化，重建容器不用重新向量化
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: relaydesk-redis
@@ -18,4 +42,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  app-data:
   redis-data:
