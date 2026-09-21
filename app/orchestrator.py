@@ -17,6 +17,7 @@ from app.agents.profiles import PROFILES
 from app.agents.tools import ToolContext, ToolSpec
 from app.intent.recognizer import IntentRecognizer
 from app.intent.schema import IntentResult
+from app.memory.manager import MemoryContext
 from app.routing.router import RoutingDecision, decide
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,8 @@ class OrchestratorResult:
 
 
 async def run_agents(
-    agents: dict[str, Any], names: list[str], message: str, ctx: ToolContext, background: str
+    agents: dict[str, Any], names: list[str], message: str, ctx: ToolContext, background: str,
+    history: Optional[list[dict[str, str]]] = None,
 ) -> list[AgentReply]:
     """并行运行多个 Agent，返回与 names 顺序一致的回复列表。
 
@@ -65,7 +67,7 @@ async def run_agents(
     大约 8 行。
     """
     # 这里只是创建协程，还没有开始执行。不能写 await，否则会变成一个接一个地串行。
-    coros = [agents[name].run(message, ctx, background) for name in names]
+    coros = [agents[name].run(message, ctx, background, history) for name in names]
 
     # gather 让它们同时开始，并按传入顺序返回结果。
     # return_exceptions=True：某个 Agent 抛异常时，异常对象会出现在结果列表的对应位置，不影响其他 Agent。
@@ -82,21 +84,28 @@ async def run_agents(
     return replies
 
 class Orchestrator:
-    def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None):
+    def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None, memory=None):
         self._llm = llm
+        self._memory = memory   # 为 None 时系统无记忆，每条消息独立处理
         self._recognizer = IntentRecognizer(llm)
         self._agents: dict[str, Any] = {
             name: BaseAgent(llm, profile, shared_tools) for name, profile in PROFILES.items()
         }
         self._escalation = EscalationAgent()
 
-    async def handle(self, message: str, user_id: str) -> OrchestratorResult:
+    async def handle(self, message: str, user_id: str, conv_id: str = "") -> OrchestratorResult:
         t0 = time.monotonic()
         request_id = uuid.uuid4().hex[:8]
 
-        intent = await self._recognizer.recognize(message)
+        mem = await self._load_memory(user_id, conv_id)
+        history = mem.history()
+
+        # 意图识别带上最近两轮。"订单号是 A12345"这种话，脱离上文无法判断用户想干什么
+        intent = await self._recognizer.recognize(message, history[-4:] or None)
         decision = decide(intent, message)
-        ctx = ToolContext(user_id=user_id, entities=intent.entities)
+        # 只收集用户说过的话，不含助手的回复。否则模型上一轮编出来的订单号，下一轮就变成"出现过"了
+        said_by_user = " ".join([m["content"] for m in history if m["role"] == "user"] + [message])
+        ctx = ToolContext(user_id=user_id, entities=intent.entities, conversation_text=said_by_user)
         logger.info("[%s] %s", request_id, decision.reason)
 
         if decision.action == "clarify":
@@ -106,12 +115,14 @@ class Orchestrator:
             response, replies = reply.content, [reply]
         else:
             names = [decision.primary] + decision.supporting
-            background = self._background(intent)
+            background = self._background(intent, mem.summary)
             if len(names) > 1:
                 background += "\n" + TEAMWORK_NOTE
-            replies = await run_agents(self._agents, names, message, ctx, background)
-            replies = await self._fallback_if_primary_failed(replies, decision, message, ctx, intent)
+            replies = await run_agents(self._agents, names, message, ctx, background, history)
+            replies = await self._fallback_if_primary_failed(replies, decision, message, ctx, background, history)
             response = await self._compose(message, replies)
+
+        await self._save_memory(user_id, conv_id, message, response)
 
         return OrchestratorResult(
             request_id=request_id,
@@ -123,19 +134,40 @@ class Orchestrator:
             latency_ms=round((time.monotonic() - t0) * 1000, 1),
         )
 
+    async def _load_memory(self, user_id: str, conv_id: str) -> MemoryContext:
+        """记忆读取失败不应该让整个请求失败。读不到就当作新对话处理。"""
+        if self._memory is None or not conv_id:
+            return MemoryContext()
+        try:
+            return await self._memory.load(user_id, conv_id)
+        except Exception as ex:
+            logger.warning("读取会话记忆失败，按无记忆处理: %r", ex)
+            return MemoryContext()
+
+    async def _save_memory(self, user_id: str, conv_id: str, message: str, response: str) -> None:
+        if self._memory is None or not conv_id:
+            return
+        try:
+            await self._memory.save_turn(user_id, conv_id, message, response)
+        except Exception as ex:
+            logger.warning("写入会话记忆失败: %r", ex)
+
     @staticmethod
-    def _background(intent: IntentResult) -> str:
+    def _background(intent: IntentResult, summary: str = "") -> str:
         """把意图识别的结构化结果转成文字交给 Agent，省得它自己再从原话里猜一遍。"""
         entities = {k: v for k, v in intent.entities.items() if v}
-        return (f"意图: {intent.intent.value}\n紧急度: {intent.urgency.name}\n"
+        text = (f"意图: {intent.intent.value}\n紧急度: {intent.urgency.name}\n"
                 f"已从用户消息中抽取的信息: {entities or '无'}")
+        if summary:
+            text += f"\n本次会话更早内容的摘要: {summary}"
+        return text
 
-    async def _fallback_if_primary_failed(self, replies, decision, message, ctx, intent) -> list[AgentReply]:
+    async def _fallback_if_primary_failed(self, replies, decision, message, ctx, background, history) -> list[AgentReply]:
         """专业 Agent 挂了，让通用客服顶上，保证用户至少得到一个回应。"""
         if replies[0].success or decision.primary == "general":
             return replies
         logger.warning("%s agent 失败，降级到 general", decision.primary)
-        fallback = await self._agents["general"].run(message, ctx, self._background(intent))
+        fallback = await self._agents["general"].run(message, ctx, background, history)
         return [fallback] + replies[1:]
 
     async def _compose(self, message: str, replies: list[AgentReply]) -> str:

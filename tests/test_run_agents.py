@@ -13,7 +13,7 @@ class SlowAgent:
     def __init__(self, name, seconds=0.2, error=None):
         self.name, self.seconds, self.error = name, seconds, error
 
-    async def run(self, message, ctx, background=""):
+    async def run(self, message, ctx, background="", history=None):
         await asyncio.sleep(self.seconds)
         if self.error:
             raise self.error

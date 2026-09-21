@@ -1,0 +1,21 @@
+# 本地开发依赖。目前只有 Redis，阶段 6 会把应用本身也加进来。
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: relaydesk-redis
+    # 只绑定本机回环地址。写成 "6379:6379" 会监听所有网卡，同一网络里的其他机器都能连上这个没有密码的 Redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    # appendonly：每次写入都追加到磁盘日志，容器重启后数据还在
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  redis-data:
