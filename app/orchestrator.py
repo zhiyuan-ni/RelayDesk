@@ -41,6 +41,7 @@ class OrchestratorResult:
     decision: RoutingDecision
     agents_used: list[str] = field(default_factory=list)   # 实际产出了有效回复的 Agent
     tool_traces: list[dict[str, Any]] = field(default_factory=list)
+    memories_used: list[str] = field(default_factory=list)   # 本次从长期记忆里想起的内容
     latency_ms: float = 0.0
 
 
@@ -100,11 +101,17 @@ class Orchestrator:
         mem = await self._load_memory(user_id, conv_id)
         history = mem.history()
 
+        # 意图识别和长期记忆检索互不依赖，同时进行。前者约 1.5 秒，后者约 1 秒，并行后不增加总耗时。
         # 意图识别带上最近两轮。"订单号是 A12345"这种话，脱离上文无法判断用户想干什么
-        intent = await self._recognizer.recognize(message, history[-4:] or None)
+        intent, memories = await asyncio.gather(
+            self._recognizer.recognize(message, history[-4:] or None),
+            self._recall(user_id, conv_id, message),
+        )
         decision = decide(intent, message)
         # 只收集用户说过的话，不含助手的回复。否则模型上一轮编出来的订单号，下一轮就变成"出现过"了
-        said_by_user = " ".join([m["content"] for m in history if m["role"] == "user"] + [message])
+        # 从长期记忆想起的内容也算在内：那是用户在以往会话里亲口说过的。
+        # 否则用户问"上次那个订单怎么样了"，系统明明想起了订单号，却会被溯源校验挡住不让查
+        said_by_user = " ".join([m["content"] for m in history if m["role"] == "user"] + [message] + memories)
         ctx = ToolContext(user_id=user_id, entities=intent.entities, conversation_text=said_by_user)
         logger.info("[%s] %s", request_id, decision.reason)
 
@@ -115,7 +122,7 @@ class Orchestrator:
             response, replies = reply.content, [reply]
         else:
             names = [decision.primary] + decision.supporting
-            background = self._background(intent, mem.summary)
+            background = self._background(intent, mem.summary, memories)
             if len(names) > 1:
                 background += "\n" + TEAMWORK_NOTE
             replies = await run_agents(self._agents, names, message, ctx, background, history)
@@ -130,6 +137,7 @@ class Orchestrator:
             intent=intent,
             decision=decision,
             agents_used=[r.agent for r in replies if r.success],
+            memories_used=memories,
             tool_traces=[{"agent": r.agent, **t} for r in replies for t in r.tool_traces],
             latency_ms=round((time.monotonic() - t0) * 1000, 1),
         )
@@ -152,14 +160,28 @@ class Orchestrator:
         except Exception as ex:
             logger.warning("写入会话记忆失败: %r", ex)
 
+    async def _recall(self, user_id: str, conv_id: str, message: str) -> list[str]:
+        if self._memory is None or not conv_id or not hasattr(self._memory, "recall"):
+            return []
+        try:
+            return await self._memory.recall(user_id, conv_id, message)
+        except Exception as ex:
+            # 它和意图识别一起放在 gather 里，这里不兜住的话，想不起往事会连累整个请求失败
+            logger.warning("检索长期记忆失败，按没有相关记忆处理: %r", ex)
+            return []
+
     @staticmethod
-    def _background(intent: IntentResult, summary: str = "") -> str:
+    def _background(intent: IntentResult, summary: str = "", memories: Optional[list[str]] = None) -> str:
         """把意图识别的结构化结果转成文字交给 Agent，省得它自己再从原话里猜一遍。"""
         entities = {k: v for k, v in intent.entities.items() if v}
         text = (f"意图: {intent.intent.value}\n紧急度: {intent.urgency.name}\n"
                 f"已从用户消息中抽取的信息: {entities or '无'}")
         if summary:
             text += f"\n本次会话更早内容的摘要: {summary}"
+        if memories:
+            listed = "\n".join(f"  - {m}" for m in memories)
+            text += ("\n该用户以往会话中可能相关的记录，仅供参考。是否与当前问题有关由你判断，"
+                     f"拿不准就向用户确认，不要直接当成事实:\n{listed}")
         return text
 
     async def _fallback_if_primary_failed(self, replies, decision, message, ctx, background, history) -> list[AgentReply]:

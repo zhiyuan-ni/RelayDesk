@@ -29,6 +29,15 @@ class KnowledgeBase:
         self._client = chromadb.PersistentClient(path=path, settings=chromadb.Settings(anonymized_telemetry=False))
         self._col = self._open_collection()
 
+    @property
+    def embedder(self):
+        return self._embedder
+
+    @property
+    def client(self):
+        """底层的 ChromaDB 客户端。长期记忆复用它，两者存在同一个本地库的不同集合里。"""
+        return self._client
+
     def _open_collection(self):
         # embedding_function=None：明确告诉 ChromaDB 不要用它自带的模型
         # hnsw:space=cosine：用余弦距离比较向量，只看方向不看长度，是文本检索的标准选择
