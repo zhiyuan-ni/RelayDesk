@@ -61,21 +61,7 @@ async def run_agents(
 ) -> list[AgentReply]:
     """并行运行多个 Agent，返回与 names 顺序一致的回复列表。
 
-    ───────────── 练习：请你实现 ─────────────
-    这就是异步课里 gather 的实战。规格对应 tests/test_run_agents.py：
-      1. 并行：所有 Agent 同时开始。两个各耗时 0.2 秒的 Agent，总耗时应接近 0.2 秒而不是 0.4 秒
-      2. 保序：返回列表的顺序和 names 一致。gather 本身就保证这一点
-      3. 容错：某个 Agent 抛异常时，不能影响其他 Agent，
-               该位置放一个 AgentReply(名字, "", False) 表示失败
-
-    提示：
-      - 每个 Agent 的调用方式： agents[name].run(message, ctx, background)
-        它返回的是协程，先不要 await，收集成列表交给 gather
-      - results = await asyncio.gather(*协程列表, return_exceptions=True)
-        星号的作用是把列表拆开成多个参数
-      - 用 zip(names, results) 同时遍历名字和结果
-      - 用 isinstance(r, Exception) 判断这个位置是不是异常
-    大约 8 行。
+    所有 Agent 同时开始；某个 Agent 抛出异常或被取消时，该位置放一个失败的 AgentReply，不影响其他 Agent。
     """
     # 这里只是创建协程，还没有开始执行。不能写 await，否则会变成一个接一个地串行。
     coros = [_run_one_agent(agents[name], name, message, ctx, background, history) for name in names]

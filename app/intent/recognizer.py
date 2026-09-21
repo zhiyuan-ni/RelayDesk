@@ -13,23 +13,15 @@ MIN_CONF = 0.5     # 最终置信度低于它就判为 OTHER，交给下游去�
 
 
 def fuse(llm: Optional[Vote], rule: Optional[Vote]) -> tuple[Intent, float, str]:
-    """融合两票，返回 (意图, 置信度, 来源)。来源取值 "both" / "llm" / "rule" / "none"。
+    """融合 LLM 路和规则路的两票，返回 (意图, 置信度, 来源)。来源取值 "both" / "llm" / "rule" / "none"。
 
-    ───────────── 练习：请你实现 ─────────────
-    规格，和 tests/test_intent_fuse.py 里的用例一一对应：
-      1. 两票都没有            -> (OTHER, 0.0, "none")
-      2. 只有规则票            -> 用规则票，来源 "rule"
-      3. 只有 LLM 票           -> 用 LLM 票，来源 "llm"
-      4. 两票意图一致          -> 用该意图，置信度 = LLM 置信度 + AGREE_BONUS，最大 1.0，来源 "both"
-      5. 两票冲突：
-           LLM 置信度 >= LLM_TRUST -> 用 LLM 票，来源 "llm"
-           否则                    -> 用规则票，来源 "rule"
-      6. 最后一步：如果选出的置信度 < MIN_CONF，把意图改成 OTHER，置信度和来源保持不变
+    两票一致：采用该意图，置信度加 AGREE_BONUS。
+    两票冲突：LLM 置信度达到 LLM_TRUST 时听 LLM，否则听规则。
+    只有一票：用那一票。都没有：OTHER。
+    最后若置信度低于 MIN_CONF，意图改为 OTHER，由下游反问澄清。
 
-    提示：
-      - 判断"没有这一票"用  if llm is None
-      - Vote 有 .intent 和 .confidence 两个属性
-      - 可以先用 if/elif 选出 intent, conf, source 三个变量，最后统一做第 6 步再 return
+    评测发现模型自报的置信度集中在 0.85 到 1.0，没有区分度，LLM_TRUST 实际上不会触发；
+    规则路的价值是 LLM 调用失败时的兜底，以及"两路一致"这个可靠的高置信信号。
     """
 
     if llm is None and rule is None:

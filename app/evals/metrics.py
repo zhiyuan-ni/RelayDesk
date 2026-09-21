@@ -25,36 +25,11 @@ def safe_div(a: float, b: float) -> float:
 
 
 def classification_report(y_true: list[str], y_pred: list[str]) -> dict[str, Any]:
-    """根据真实标签和预测标签计算各项指标。
+    """根据真实标签和预测标签计算准确率、各类别的精确率、召回率、F1 以及宏平均 F1。
 
-    ───────────── 练习：请你实现 ─────────────
-    y_true 和 y_pred 等长，第 i 个元素分别是第 i 条样本的真实标签和预测标签。
-
-    返回的字典形如：
-        {
-            "accuracy":	0.8333,
-            "macro_f1": 0.7778,
-            "per_class":	{
-            "refund":		{"precision": 1.0, "recall": 0.5, "f1": 0.6667, "support": 2},
-            "invoice": 		{...},
-          	},
-        }
-
-    规格，对应 tests/test_metrics.py：
-      	1. accuracy = 预测正确的条数 / 总条数。总条数为 0 时是 0.0
-      	2. 只统计在 y_true 里出现过的类别，按类别名排序。只在预测里出现、真实标签里没有的类别不单独列出，
-        	它造成的错误已经体现在别的类别的召回率里了
-      	3. 对每个类别算出 TP、FP、FN，再算 precision、recall、f1。除法一律用 safe_div
-      	4. support 是这个类别在 y_true 里出现的次数，也就是 TP + FN
-      	5. macro_f1 是各类别 f1 的算术平均。没有任何类别时是 0.0
-      	6. 所有小数用 round(x, 4) 保留 4 位
-
-    提示：
-      	- zip(y_true, y_pred) 可以同时遍历两个列表
-      	- 统计 TP 的一种写法： sum(1 for t, p in zip(y_true, y_pred) if t == label and p == label)
-      	- 类别列表： sorted(set(y_true))
-    大约 15 行。这是目前最长的一个练习，但每一步都是照着公式写。
-	"""
+    只统计在 y_true 里出现过的类别，按类别名排序；support 是该类别在 y_true 里的出现次数。
+    除法一律用 safe_div，某个类别一次都没被预测到时精确率为 0 而不是报错。
+    """
     per_class = {}
     for label in sorted(set(y_true)):
         tp = sum(1 for t, p in zip(y_true, y_pred) if t == label and p == label)

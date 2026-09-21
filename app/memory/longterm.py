@@ -35,25 +35,9 @@ def rank_memories(
 ) -> list[dict[str, Any]]:
     """过滤并排序候选记忆。
 
-    ───────────── 练习：请你实现 ─────────────
-    每条候选记忆 hit 是一个字典：
-        {"conv_id": "c1", "text": "用户咨询过订单 B20250917 的重复扣款", "similarity": 0.72, "ts": 1789000000.0}
-    其中 ts 是这条记忆最后更新的时刻，单位是秒，和 now_ts 同一种时间戳。
-
-    规格，对应 tests/test_longterm.py：
-      1. 去掉 conv_id 等于 exclude_conv_id 的记忆。当前会话的内容已经在工作记忆里了，不需要再想起一遍
-      2. 去掉 similarity 小于 min_similarity 的记忆
-      3. 给剩下的每条记忆算一个最终分数：
-             age_days = (now_ts - hit["ts"]) / SECONDS_PER_DAY
-             final    = hit["similarity"] * 0.5 ** (age_days / half_life_days)
-         含义：刚发生的记忆系数是 1；过了一个半衰期系数是 0.5；过了两个半衰期是 0.25
-         在 Python 里 ** 是乘方运算符，0.5 ** 2 等于 0.25
-      4. 按 final 从高到低排序，取前 top_k 条
-      5. 返回的每条记忆要多带一个键 "final_score"，值为 round(final, 4)。
-         不要修改传入的字典，用 {**hit, "final_score": ...} 生成新字典
-
-    提示：可以先用一个 for 循环，把通过过滤的记忆连同分数收集到一个新列表里，再 sorted 取前几个。
-    大约 10 行。
+    去掉当前会话的记忆（它已经在工作记忆里）和相似度低于门槛的记忆，
+    其余按 相似度 × 0.5^(天数 / 半衰期) 排序，取前 top_k 条，并在每条上附加 final_score。
+    不修改传入的字典。
     """
     results = []
     for hit in hits:

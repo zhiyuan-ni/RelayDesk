@@ -30,25 +30,10 @@ def split_sentences(text: str) -> list[str]:
 
 
 def pack_sentences(sentences: list[str], max_chars: int, overlap: int = 1) -> list[str]:
-    """把句子贪心地打包成片段。
+    """把句子贪心地打包成片段，每个片段不超过 max_chars 个字符。
 
-    ───────────── 练习：请你实现 ─────────────
-    规格，对应 tests/test_chunker.py：
-      1. sentences 为空                    -> []
-      2. 依次把句子放进"当前片段"。如果放进去之后总长度会超过 max_chars，
-         并且当前片段不为空，就先把当前片段收尾，再开一个新片段放这个句子
-      3. 重叠：新片段要以上一个片段的最后 overlap 个句子开头，然后才放新句子。
-         overlap 为 0 表示不重叠
-      4. 单个句子本身就超过 max_chars 时，不再细分，让它独自成为一个片段
-      5. 循环结束后，别忘了把最后一个当前片段收尾
-    片段的文本 = 其中所有句子直接拼接，即 "".join(句子列表)
-
-    提示：
-      - 用一个列表 current 存当前片段里的句子，用 chunks 存已完成的片段文本
-      - 当前片段的长度： len("".join(current))
-      - 取列表最后 n 个元素： current[-n:]。注意 current[-0:] 会返回整个列表，
-        所以 overlap 为 0 时要单独处理成空列表
-    大约 10 行。
+    新片段以上一个片段的最后 overlap 个句子开头，防止关键信息恰好被切在边界上。
+    单个句子本身超过上限时不再细分，独自成为一个片段。
     """
     current: list[str] = []   # 当前片段里的句子
     chunks: list[str] = []    # 已完成的片段
