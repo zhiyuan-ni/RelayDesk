@@ -2,6 +2,7 @@
 import time
 from typing import Optional
 
+from app.intent.jev_classifier import jev_vote
 from app.intent.llm_classifier import llm_vote
 from app.intent.rules import detect_urgency, extract_entities, rule_vote
 from app.intent.schema import INTENT_GROUP, Intent, IntentResult, Vote
@@ -46,8 +47,9 @@ def fuse(llm: Optional[Vote], rule: Optional[Vote]) -> tuple[Intent, float, str]
 
 
 class IntentRecognizer:
-    def __init__(self, llm):
-        self._llm = llm
+    def __init__(self, llm, jev=None):
+        """模型那一票由谁投：传了 jev 就用 jev，否则用 LLM，二选一。规则路和融合逻辑两种情况下完全相同。"""
+        self._llm, self._jev = llm, jev
 
     async def recognize(
         self, message: str, history: Optional[list[dict[str, str]]] = None
@@ -55,7 +57,10 @@ class IntentRecognizer:
         t0 = time.monotonic()
 
         rule = rule_vote(message)                          # 同步，微秒级
-        llm = await llm_vote(self._llm, message, history)  # 异步，约 1 秒
+        if self._jev is not None:
+            llm = await jev_vote(self._jev, message, history)  # 约 0.5 秒
+        else:
+            llm = await llm_vote(self._llm, message, history)  # 约 1 到 2 秒
         intent, conf, source = fuse(llm, rule)
 
         winner = llm if source in ("llm", "both") else rule

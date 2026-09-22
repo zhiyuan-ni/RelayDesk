@@ -12,6 +12,7 @@ from app.config import settings
 from app.knowledge.embedder import Embedder, EmbeddingConfigError, EmbeddingUnavailable
 from app.knowledge.kb import KnowledgeBase
 from app.knowledge.retriever import Retriever
+from app.jev import JevClient
 from app.knowledge.tool import build_knowledge_tool, knowledge_fallback
 from app.llm import LLMClient
 from app.memory.longterm import LongTermMemory
@@ -86,11 +87,18 @@ async def lifespan(app: FastAPI):
     app.state.retriever = retriever
     memory, redis_client = await _connect_memory(llm, await _open_longterm(kb))
     app.state.memory = memory
+    jev = None
+    if settings.intent_backend == "jev":
+        jev = JevClient(settings)
+        await jev.warmup()
     app.state.orchestrator = Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory,
-                                          intent_llm=llm.for_model(settings.intent_model))
+                                          intent_llm=llm.for_model(settings.intent_model), intent_jev=jev)
     logger.info("模型：回复 %s，意图 %s，重排 %s", settings.llm_model,
-                settings.intent_model or settings.llm_model, settings.rerank_model or settings.llm_model)
+                jev.model if jev else settings.intent_model or settings.llm_model,
+                settings.rerank_model or settings.llm_model)
     yield
+    if jev is not None:
+        await jev.aclose()
     if memory is not None:
         await memory.wait_background()   # 让还在进行的压缩任务跑完，再断开连接
         await redis_client.aclose()

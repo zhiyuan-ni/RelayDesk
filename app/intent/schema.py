@@ -63,7 +63,7 @@ class IntentResult:
     intent: Intent
     group: Group
     confidence: float
-    source: str                      # "both" / "llm" / "rule" / "none"，说明结论来自哪一路
+    source: str                      # "both" / "llm" / "rule" / "none"，说明结论来自哪一路。"llm" 指模型那一路，jev 也算
     urgency: Urgency
     entities: dict[str, list[str]] = field(default_factory=dict)
     reasoning: str = ""

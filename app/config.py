@@ -37,6 +37,10 @@ class Settings:
     # 留空表示沿用 llm_model。
     intent_model: str = ""
     rerank_model: str = ""
+    # 意图分类模型那一票由谁投："llm" 用对话模型（配合 intent_model），"jev" 用 TypeSafe 的 jev
+    intent_backend: str = "llm"
+    jev_model: str = "jev-1.13"
+    jev_timeout_s: float = 10.0
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -48,7 +52,14 @@ def _optional_bool(name: str) -> Optional[bool]:
     return None
 
 
+INTENT_BACKENDS = ("llm", "jev")
+
+
 def load_settings() -> Settings:
+    intent_backend = os.getenv("INTENT_BACKEND", "").strip().lower() or "llm"
+    if intent_backend not in INTENT_BACKENDS:
+        # 拼错时直接报错。静默退回 llm 的话，你以为在用 jev，评测数字其实是 LLM 的
+        raise RuntimeError(f"INTENT_BACKEND={intent_backend!r} 无效，可选 {INTENT_BACKENDS}")
     return Settings(
         llm_api_key=os.getenv("LLM_API_KEY", "").strip(),
         llm_base_url=os.getenv("LLM_BASE_URL", "https://aihubmix.com/v1").strip(),
@@ -60,6 +71,8 @@ def load_settings() -> Settings:
         judge_model=os.getenv("JUDGE_MODEL", "gpt-4.1-mini").strip(),
         intent_model=os.getenv("INTENT_MODEL", "").strip(),
         rerank_model=os.getenv("RERANK_MODEL", "").strip(),
+        intent_backend=intent_backend,
+        jev_model=os.getenv("JEV_MODEL", "").strip() or "jev-1.13",
         retrieval_rerank=_optional_bool("RETRIEVAL_RERANK") is not False,    # 未设置时为 True
         retrieval_rewrite=_optional_bool("RETRIEVAL_REWRITE") is True,       # 未设置时为 False
     )
