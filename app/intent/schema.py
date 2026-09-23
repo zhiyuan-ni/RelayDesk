@@ -8,7 +8,7 @@ class Intent(str, Enum):
     GREETING = "greeting"
     ORDER_LOGISTICS = "order_logistics"
     COMPLAINT = "complaint"
-    REFUND = "refund"
+    REFUND = "refund"  # 范围是整个售后：退货、换货、维修保修、补发、退款。名字沿用 refund
     INVOICE = "invoice"
     PAYMENT_ISSUE = "payment_issue"
     TECH_LOGIN = "tech_login"
