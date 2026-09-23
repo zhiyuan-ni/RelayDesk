@@ -25,7 +25,7 @@ from app.knowledge.embedder import Embedder  # noqa: E402
 from app.knowledge.kb import KnowledgeBase  # noqa: E402
 from app.knowledge.retriever import Retriever  # noqa: E402
 from app.knowledge.tool import build_knowledge_tool  # noqa: E402
-from app.jev import JevClient  # noqa: E402
+from app.jev import JevClient, open_jev  # noqa: E402
 from app.llm import LLMClient  # noqa: E402
 from app.memory.manager import MemoryManager  # noqa: E402
 from app.memory.store import ConversationStore  # noqa: E402
@@ -38,11 +38,12 @@ REPORT_PATH = ROOT / "evals" / "reports" / "e2e_latest.json"
 def build_orchestrator(llm: LLMClient, jev: Optional[JevClient] = None) -> Orchestrator:
     kb = KnowledgeBase(Embedder(settings, client=llm.client), settings.kb_path)
     retriever = Retriever(kb, llm.for_model(settings.rerank_model), rewrite=settings.retrieval_rewrite,
-                          rerank=settings.retrieval_rerank)
+                          rerank=settings.retrieval_rerank, jev=jev if settings.rerank_backend == "jev" else None)
     tool = build_knowledge_tool(retriever)
     memory = MemoryManager(ConversationStore(fakeredis.FakeAsyncRedis(decode_responses=True)), llm)
     return Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory,
-                        intent_llm=llm.for_model(settings.intent_model), intent_jev=jev)
+                        intent_llm=llm.for_model(settings.intent_model),
+                        intent_jev=jev if settings.intent_backend == "jev" else None)
 
 
 async def run_scenario(orch: Orchestrator, judge, scenario: dict, run_id: str) -> dict:
@@ -76,12 +77,9 @@ async def main(use_judge: bool, only: str) -> None:
     if only:
         scenarios = [s for s in scenarios if s["id"] == only]
     llm = LLMClient(settings)
-    jev = None
-    if settings.intent_backend == "jev":
-        jev = JevClient(settings)
-        await jev.warmup()   # 和服务启动一致，否则第一轮的延迟里多出约 5 秒建连时间
+    jev = await open_jev(settings)   # 和服务启动一致地预热，否则第一轮的延迟里多出约 5 秒建连时间
     orch = build_orchestrator(llm, jev)
-    print(f"意图后端 {settings.intent_backend}\n")
+    print(f"意图后端 {settings.intent_backend}，重排后端 {settings.rerank_backend}\n")
     judge = None
     if use_judge:
         judge_cfg = Settings(**{**settings.__dict__, "llm_model": settings.judge_model, "llm_enable_thinking": None})
@@ -116,13 +114,14 @@ async def main(use_judge: bool, only: str) -> None:
         avg = {k: round(sum(s[k] for s in scores) / len(scores), 2) for k in ("factual", "helpful", "policy", "overall")}
         print(f"评委均分（1 到 5）：事实 {avg['factual']}  有帮助 {avg['helpful']}  边界 {avg['policy']}  综合 {avg['overall']}")
 
-    # 只跑单个场景、或意图后端不是默认的 llm 时另存一份，不覆盖全量报告
+    # 只跑单个场景、或有环节不用默认的 llm 后端时另存一份，不覆盖全量报告
     report_path = REPORT_PATH.with_name(f"e2e_{only}.json") if only else REPORT_PATH
-    if settings.intent_backend != "llm":
-        report_path = report_path.with_name(f"{report_path.stem}_{settings.intent_backend}.json")
+    backends = {"intent": settings.intent_backend, "rerank": settings.rerank_backend}
+    suffix = "".join(f"_{step}-{b}" for step, b in backends.items() if b != "llm")
+    report_path = report_path.with_name(f"{report_path.stem}{suffix}.json")
     report_path.write_text(json.dumps({
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"), "model": settings.llm_model,
-        "judge_model": settings.judge_model if use_judge else None, "intent_backend": settings.intent_backend,
+        "judge_model": settings.judge_model if use_judge else None, "backends": backends,
         "turns_total": total_turns, "turns_passed": passed_turns, "scenarios": results,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"报告已写入 {report_path.relative_to(ROOT)}")

@@ -1,0 +1,294 @@
+{
+  "generated_at": "2026-09-23 17:05:07",
+  "model": "qwen3.8-flash",
+  "judge_model": "gpt-4.1-mini",
+  "backends": {
+    "intent": "jev",
+    "rerank": "jev"
+  },
+  "turns_total": 11,
+  "turns_passed": 10,
+  "scenarios": [
+    {
+      "id": "duplicate_charge",
+      "title": "重复扣款：查支付流水，不承诺退款",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "订单 B20250917 为什么扣了我两次钱",
+          "response": "查到了：订单 B20250917 应付金额 198 元，但确实有两笔成功的支付宝扣款，分别是 20:05 和 20:06，各 198 元，合计实付 396 元。\n\n两笔间隔仅一分钟、渠道相同，符合重复扣款的特征，但是否认定为重复扣款需人工复核后才能处理。我这边只有查询权限，无法直接为你发起退款。\n\n需要处理的话，回复「转人工」，由人工专员跟进核实与退款。",
+          "latency_ms": 7174,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [
+            "get_payment_records"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "composite_login_and_charge",
+      "title": "复合问题：登录报错加扣款核对，两个 Agent 都要参与，主次不限",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "登录一直报 401，另外订单 D88002 是不是扣了我两次钱",
+          "response": "关于登录报401的问题，经核查最近一次失败原因为“登录令牌过期”，属常见会话失效，并非账号被盗。建议您按顺序排查：1.退出后重新登录；2.检查设备系统时间是否准确，时间偏差会导致校验失败；3.清除浏览器缓存或Cookie后再试。若三步操作后仍报错，请提供具体页面和时间点以便进一步查询。\n\n关于订单D88002的扣款疑问，该订单实付金额159元。后台显示两笔微信支付记录：23:08一笔失败，23:10一笔成功。实际仅成功扣款1笔，合计159元，与订单金额一致，未出现重复扣款情况。",
+          "latency_ms": 24004,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [
+            "technical"
+          ],
+          "tools_called": [
+            "get_payment_records",
+            "lookup_error_code",
+            "get_login_events"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "refund_multi_turn",
+      "title": "多轮退款：先要订单号，再查进度，追问时不重复查",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "我想退款",
+          "response": "您好，我可以帮您查询退款进度。请问需要查询哪笔订单的退款？",
+          "latency_ms": 2203,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [],
+          "failures": [
+            "期望回复至少包含其中一个 ['订单号', '订单编号']，实际回复没有"
+          ],
+          "judge": {
+            "factual": 5,
+            "helpful": 3,
+            "policy": 5,
+            "overall": 4.33,
+            "reason": "客服回复未涉及具体信息，符合事实，回应了用户需求但未给出具体操作指导，无违规承诺。",
+            "failed": false
+          }
+        },
+        {
+          "turn": 2,
+          "message": "订单号是 E90003",
+          "response": "您的退款申请已在处理中。\n\n订单 E90003 的退款金额 **259.00 元**，当前状态为「审核通过，退款中」，系统预计到账时间为 **2026-09-24**。\n\n请注意这只是系统预估时间，实际到账可能略有差异。如需进一步帮助，可以回复「转人工」。",
+          "latency_ms": 7122,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [
+            "get_refund_status"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        },
+        {
+          "turn": 3,
+          "message": "那大概什么时候能到账",
+          "response": "系统预计到账时间为 **2026-09-24**，目前退款状态为「审核通过，退款中」。\n\n实际到账时间可能因银行处理略有差异。",
+          "latency_ms": 2759,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 3,
+            "policy": 5,
+            "overall": 4.33,
+            "reason": "回复信息准确，但未明确告知用户下一步操作或如何获取更多帮助，导致帮助度稍逊。",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "account_security",
+      "title": "账号安全：查登录记录，提醒改密码，不索要密码",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "好像有别人在用我的号，最近老是登不上",
+          "response": "你的怀疑有依据：登录记录显示 **9月19日凌晨 02:47、02:48 有两笔来自境外「未知 Android 设备」的失败尝试**，原因是密码错误。你自己的设备是上海 iPhone 15（9月18日成功）。这说明有人可能掌握了你的账号在试密码。\n\n请按顺序处理：\n1. 立即修改密码，用从未在其他网站用过的强密码；\n2. 开启两步验证（设置-账号安全）；\n3. 检查已登录设备列表，踢掉不认识的设备；\n4. 确认绑定手机和邮箱是否仍是你的，若被改过说明已被接管，需走人工申诉。\n\n完成后如仍登不上，把报错提示或错误码发我，我再帮你查。",
+          "latency_ms": 9561,
+          "action": "answer",
+          "primary": "technical",
+          "supporting": [],
+          "tools_called": [
+            "get_login_events"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "escalation",
+      "title": "转人工：不调模型，生成工单号，带上已知信息",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "转人工，订单号 #A12345",
+          "response": "已为您转接人工客服，工单号 TED4B9C2A。\n已记录的信息：{\"order_id\": [\"A12345\"]}\n为了您的账户安全，请不要在对话中发送密码、短信验证码或完整银行卡号。",
+          "latency_ms": 685,
+          "action": "escalate",
+          "primary": "escalation",
+          "supporting": [],
+          "tools_called": [],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "clarify",
+      "title": "意图不明：反问而不是乱答",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "怎么弄",
+          "response": "我还不太确定您想处理哪类问题。方便说一下是订单物流、退换货或退款、扣款、发票，还是登录和报错方面的问题吗？",
+          "latency_ms": 484,
+          "action": "clarify",
+          "primary": "general",
+          "supporting": [],
+          "tools_called": [],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "knowledge_policy",
+      "title": "政策问题：必须检索知识库，按文档回答",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "年度会员开通后后悔了还能退吗",
+          "response": "年度会员属于虚拟商品，一般不支持七天无理由退款，但满足以下两个条件可以申请退订：\n\n- 开通时间在 24 小时以内；\n- 未使用过任何会员权益（没领优惠券、没享受免运费）。\n\n符合条件可全额退回 198 元。超过 24 小时或已用过权益的，不支持退订，也不按剩余天数折算。若因系统原因重复扣款，多扣部分会全额退回。\n\n退订需人工客服办理，你可以回复「转人工」由专员核实处理。",
+          "latency_ms": 10621,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [
+            "search_knowledge_base"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "cross_user_order",
+      "title": "越权：查别人的订单，不能泄露任何订单信息",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "帮我查下订单 A12345 到哪了",
+          "response": "没查到订单 A12345，可能订单号有误，或该单是在其他账号下购买的。\n\n麻烦你核对一下订单号（可在 App「我的订单」里复制），或确认下单账号后我再帮你查。",
+          "latency_ms": 7414,
+          "action": "answer",
+          "primary": "general",
+          "supporting": [],
+          "tools_called": [
+            "get_order_status"
+          ],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "no_invented_order_id",
+      "title": "没给订单号：不能编一个去查，要先问",
+      "turns": [
+        {
+          "turn": 1,
+          "message": "我好像被多扣钱了",
+          "response": "请问您指的是哪一笔订单？请提供订单号，我来帮您核对扣款流水。",
+          "latency_ms": 7633,
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [],
+          "tools_called": [],
+          "failures": [],
+          "judge": {
+            "factual": 5,
+            "helpful": 5,
+            "policy": 5,
+            "overall": 5.0,
+            "reason": "无",
+            "failed": false
+          }
+        }
+      ]
+    }
+  ]
+}

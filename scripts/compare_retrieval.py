@@ -1,4 +1,4 @@
-"""对比三种检索模式的命中率和延迟。
+"""对比几种检索模式的命中率和延迟：纯向量、LLM 重排、jev 重排、改写加重排。
 
 运行：uv run python scripts/compare_retrieval.py
 
@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.config import settings  # noqa: E402
+from app.jev import JevClient  # noqa: E402
 from app.knowledge.embedder import Embedder  # noqa: E402
 from app.knowledge.kb import KnowledgeBase  # noqa: E402
 from app.knowledge.retriever import Retriever  # noqa: E402
@@ -63,7 +64,9 @@ async def main() -> None:
     kb = KnowledgeBase(Embedder(settings), tempfile.mkdtemp())
     await kb.ensure_ready()
     llm = LLMClient(settings).for_model(settings.rerank_model)
-    print(f"重排模型: {llm.model}")
+    jev = JevClient(settings)
+    await jev.warmup()   # 预热，否则第一条的延迟里含约 5 秒建连时间
+    print(f"LLM 重排模型: {llm.model}，jev 模型: {jev.model}")
     print(f"片段数 {await kb.count()}，向量模型 {settings.embedding_model}，LLM {settings.llm_model}\n")
 
     async def vector_only(q):
@@ -72,12 +75,17 @@ async def main() -> None:
     async def rerank_only(q):
         return (await Retriever(kb, llm, rewrite=False, rerank=True).retrieve(q, 4)).hits
 
+    async def jev_rerank(q):
+        return (await Retriever(kb, llm, rewrite=False, rerank=True, jev=jev).retrieve(q, 4)).hits
+
     async def full(q):
         return (await Retriever(kb, llm, rewrite=True, rerank=True).retrieve(q, 4)).hits
 
     await evaluate("纯向量", vector_only)
     await evaluate("向量+重排", rerank_only)
+    await evaluate("向量+jev重排", jev_rerank)
     await evaluate("改写+向量+重排", full)
+    await jev.aclose()
 
 
 if __name__ == "__main__":

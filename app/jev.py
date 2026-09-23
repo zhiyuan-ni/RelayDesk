@@ -54,3 +54,12 @@ class JevClient:
 
     async def aclose(self) -> None:
         await self._http.aclose()
+
+
+async def open_jev(cfg: Settings) -> Optional[JevClient]:
+    """任一环节选了 jev 就建一个客户端并预热，各环节共用它的连接池；都没选返回 None。"""
+    if "jev" not in (cfg.intent_backend, cfg.rerank_backend):
+        return None
+    jev = JevClient(cfg)
+    await jev.warmup()
+    return jev

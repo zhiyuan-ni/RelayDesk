@@ -8,7 +8,7 @@ from app.config import Settings, load_settings
 from app.intent.jev_classifier import answer_to_vote, build_question, build_state, jev_vote
 from app.intent.recognizer import IntentRecognizer
 from app.intent.schema import Intent
-from app.jev import JevClient
+from app.jev import JevClient, open_jev
 
 
 def choice(intent: str, conf: float, probs: dict | None = None) -> dict:
@@ -152,7 +152,26 @@ def test_intent_backend_is_case_insensitive(monkeypatch):
     assert load_settings().intent_backend == "jev"
 
 
-def test_invalid_intent_backend_fails_fast(monkeypatch):
-    monkeypatch.setenv("INTENT_BACKEND", "jve")
-    with pytest.raises(RuntimeError, match="INTENT_BACKEND"):
+@pytest.mark.parametrize("name", ["INTENT_BACKEND", "RERANK_BACKEND"])
+def test_invalid_backend_fails_fast(monkeypatch, name):
+    monkeypatch.setenv(name, "jve")
+    with pytest.raises(RuntimeError, match=name):
         load_settings()
+
+
+def test_rerank_backend_defaults_to_llm(monkeypatch):
+    monkeypatch.delenv("RERANK_BACKEND", raising=False)
+    assert load_settings().rerank_backend == "llm"
+
+
+async def test_open_jev_only_when_some_step_uses_it(monkeypatch):
+    assert await open_jev(cfg()) is None                    # 两个环节都用 llm，不建客户端
+    warmed = []
+
+    async def fake_warmup(self):
+        warmed.append(self.model)
+        return True
+    monkeypatch.setattr(JevClient, "warmup", fake_warmup)
+    client = await open_jev(cfg(rerank_backend="jev"))
+    assert isinstance(client, JevClient) and warmed == ["jev-1.13"]
+    await client.aclose()
