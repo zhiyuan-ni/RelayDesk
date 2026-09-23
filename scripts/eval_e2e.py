@@ -35,10 +35,12 @@ REPORT_PATH = ROOT / "evals" / "reports" / "e2e_latest.json"
 
 def build_orchestrator(llm: LLMClient) -> Orchestrator:
     kb = KnowledgeBase(Embedder(settings, client=llm.client), settings.kb_path)
-    retriever = Retriever(kb, llm, rewrite=settings.retrieval_rewrite, rerank=settings.retrieval_rerank)
+    retriever = Retriever(kb, llm.for_model(settings.rerank_model), rewrite=settings.retrieval_rewrite,
+                          rerank=settings.retrieval_rerank)
     tool = build_knowledge_tool(retriever)
     memory = MemoryManager(ConversationStore(fakeredis.FakeAsyncRedis(decode_responses=True)), llm)
-    return Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory)
+    return Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory,
+                        intent_llm=llm.for_model(settings.intent_model))
 
 
 async def run_scenario(orch: Orchestrator, judge, scenario: dict, run_id: str) -> dict:

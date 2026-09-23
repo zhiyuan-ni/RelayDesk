@@ -70,8 +70,8 @@ async def lifespan(app: FastAPI):
     except EmbeddingUnavailable as ex:
         raise RuntimeError(f"向量服务连不上，而本地还没有可用的向量库，无法完成首次建库。请检查网络或代理: {ex}") from ex
     logger.info("知识库就绪: %s, 片段数 %d, 向量模型 %s", state, await kb.count(), settings.embedding_model)
-    retriever = Retriever(kb, llm, rewrite=settings.retrieval_rewrite, rerank=settings.retrieval_rerank,
-                          rerank_timeout_s=settings.kb_rerank_timeout_s)
+    retriever = Retriever(kb, llm.for_model(settings.rerank_model), rewrite=settings.retrieval_rewrite,
+                          rerank=settings.retrieval_rerank, rerank_timeout_s=settings.kb_rerank_timeout_s)
     # 知识库检索依赖两个外部接口，延迟波动大，所以包上缓存、熔断和超时。订单等本地工具不需要
     tool, kb_stats = guarded(
         build_knowledge_tool(retriever),
@@ -86,7 +86,10 @@ async def lifespan(app: FastAPI):
     app.state.retriever = retriever
     memory, redis_client = await _connect_memory(llm, await _open_longterm(kb))
     app.state.memory = memory
-    app.state.orchestrator = Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory)
+    app.state.orchestrator = Orchestrator(llm, shared_tools={tool.name: tool}, memory=memory,
+                                          intent_llm=llm.for_model(settings.intent_model))
+    logger.info("模型：回复 %s，意图 %s，重排 %s", settings.llm_model,
+                settings.intent_model or settings.llm_model, settings.rerank_model or settings.llm_model)
     yield
     if memory is not None:
         await memory.wait_background()   # 让还在进行的压缩任务跑完，再断开连接

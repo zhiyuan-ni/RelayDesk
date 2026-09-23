@@ -34,3 +34,15 @@ def test_chat_exposes_intent_and_routing():
     assert (body["intent"], body["intent_group"], body["intent_source"]) == ("refund", "billing", "both")
     assert body["urgency"] == "HIGH" and body["entities"]["order_id"] == ["A12345"]
     assert body["primary_agent"] == "billing" and body["routing_scores"]["billing"] > 0.5
+
+
+def test_for_model_shares_client_and_drops_thinking_flag_for_other_vendors():
+    from app.config import Settings
+    from app.llm import LLMClient
+    base = LLMClient(Settings("k", "https://example.com/v1", "qwen3.8-flash", llm_enable_thinking=False))
+    same = base.for_model("")
+    qwen = base.for_model("qwen-turbo")
+    other = base.for_model("gpt-4.1-nano")
+    assert same is base
+    assert qwen.client is base.client and qwen.model == "qwen-turbo" and qwen._enable_thinking is False
+    assert other.client is base.client and other._enable_thinking is None

@@ -22,7 +22,8 @@ class AgentProfile:
     rules: tuple[str, ...]         # 行为边界，会写进 system prompt
     tool_names: tuple[str, ...]    # 工具白名单
     temperature: float = 0.2
-    max_tokens: int = 900
+    max_tokens: int = 600
+    max_chars: int = 220       # 回复字数上限，写进提示词。实测延迟几乎全在输出 token 上，回复越长越慢
 
     def system_prompt(self) -> str:
         rules = "\n".join(f"- {r}" for r in self.rules)
@@ -30,7 +31,9 @@ class AgentProfile:
             f"你是 RelayDesk 的{self.role}。\n\n行为规则：\n{rules}\n"
             "- 涉及订单、支付、登录记录等事实，必须先调用工具查询，严禁编造。\n"
             "- 工具查不到时如实告知，并说明需要用户补充什么信息。\n"
-            "- 回复简洁，直接面向用户，不要提及工具名称或内部流程。"
+            "- 回复简洁，直接面向用户，不要提及工具名称或内部流程。\n"
+            f"- 回复控制在 {self.max_chars} 字以内。先给结论，再给必要的依据和下一步；"
+            "不要用标题，不要逐项复述查到的每个字段，只说与用户问题直接相关的。"
         )
 
 

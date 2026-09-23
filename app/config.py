@@ -33,6 +33,10 @@ class Settings:
     kb_breaker_recovery_s: float = 30.0
     redis_url: str = "redis://localhost:6379/0"
     judge_model: str = "gpt-4.1-mini"   # 评测用的评委模型，刻意和主模型不同厂商
+    # 分环节选模型。意图分类和重排只输出一个标签或一串序号，不需要最强的模型，用快的。
+    # 留空表示沿用 llm_model。
+    intent_model: str = ""
+    rerank_model: str = ""
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -54,6 +58,8 @@ def load_settings() -> Settings:
         kb_path=os.getenv("KB_PATH", "data/chroma").strip(),
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0").strip(),
         judge_model=os.getenv("JUDGE_MODEL", "gpt-4.1-mini").strip(),
+        intent_model=os.getenv("INTENT_MODEL", "").strip(),
+        rerank_model=os.getenv("RERANK_MODEL", "").strip(),
         retrieval_rerank=_optional_bool("RETRIEVAL_RERANK") is not False,    # 未设置时为 True
         retrieval_rewrite=_optional_bool("RETRIEVAL_REWRITE") is True,       # 未设置时为 False
     )

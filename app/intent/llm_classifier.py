@@ -1,6 +1,7 @@
 """LLM 路：few-shot 提示 + JSON 输出。负责理解规则认不出的说法和上下文。"""
 import json
 import logging
+import re
 from typing import Optional
 
 from app.intent.schema import Intent, Vote
@@ -64,6 +65,7 @@ def build_prompt(message: str, history: Optional[list[dict[str, str]]] = None,
 def parse_vote(raw: str) -> Optional[Vote]:
     """从模型输出里解析出一票。模型偶尔会在 JSON 外面包一层说明文字，所以按花括号截取。"""
     try:
+        raw = re.sub(r"```(?:json)?", "", raw)   # 有些模型会把 JSON 包在代码围栏里
         start, end = raw.index("{"), raw.rindex("}") + 1
         data = json.loads(raw[start:end])
         intent = Intent(data["intent"])  # 不在枚举里的值会抛 ValueError

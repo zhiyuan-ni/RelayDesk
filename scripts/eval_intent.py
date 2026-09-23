@@ -105,7 +105,7 @@ def routed_primary(text: str, intent: Intent, conf: float) -> str:
     return "clarify" if d.action == "clarify" else d.primary
 
 
-async def main(split: str, with_notes: bool = True) -> None:
+async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
     cases = load_cases()
     if not with_notes:
         print("消融模式：提示词不含意图说明\n")
@@ -113,7 +113,8 @@ async def main(split: str, with_notes: bool = True) -> None:
     if split != "all":
         cases = [c for c in cases if split_of(c) == split]
         print(f"只评测 {split} 部分，共 {len(cases)} 条\n")
-    llm = LLMClient(settings)
+    llm = LLMClient(settings).for_model(settings.intent_model)   # 评测和线上用同一个意图模型
+    print(f"意图模型: {llm.model}\n")
     gate = asyncio.Semaphore(CONCURRENCY)
 
     async def run_one(case: dict) -> dict:
@@ -171,7 +172,7 @@ async def main(split: str, with_notes: bool = True) -> None:
     print(f"\n结论来源: {dict(sources)}   LLM 调用失败: {failed}")
     print(f"单次 LLM 延迟: 中位数 {latencies[len(latencies) // 2]}ms，最大 {latencies[-1]}ms；总耗时 {wall:.0f}s")
 
-    variant = "" if with_notes else "_no_notes"
+    variant = ("" if with_notes else "_no_notes") + (f"_{tag}" if tag else "")
     stem = "intent_latest" if split == "all" else f"intent_{split}"
     report_path = REPORT_PATH.with_name(f"{stem}{variant}.json")
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -182,6 +183,7 @@ async def main(split: str, with_notes: bool = True) -> None:
         "per_class_counts": dict(Counter(y_true)),
         "reports": reports, "confusions": pairs, "sources": dict(sources), "llm_failures": failed,
         "with_notes": with_notes, "routing_accuracy": round(routing_ok / len(rows), 4),
+        "intent_model": llm.model,
         "errors": [r for r in rows if r["pred_fused"] != r["intent"]],
         "rows": rows,   # 全部样本的预测结果，用于事后分析，例如规则和 LLM 不一致时谁更可靠
     }, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -192,5 +194,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=["all", "dev", "test"], default="all")
     parser.add_argument("--no-notes", action="store_true", help="消融：提示词里去掉意图说明")
+    parser.add_argument("--tag", default="", help="报告文件名后缀，用于对比不同模型")
     args = parser.parse_args()
-    asyncio.run(main(args.split, with_notes=not args.no_notes))
+    asyncio.run(main(args.split, with_notes=not args.no_notes, tag=args.tag))

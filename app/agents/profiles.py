@@ -18,6 +18,8 @@ GENERAL = AgentProfile(
     ),
     tool_names=("get_order_status",),
     temperature=0.3,
+    max_tokens=450,
+    max_chars=180,
 )
 
 TECHNICAL = AgentProfile(
@@ -31,7 +33,8 @@ TECHNICAL = AgentProfile(
     ),
     tool_names=("lookup_error_code", "get_login_events"),
     temperature=0.1,
-    max_tokens=1100,
+    max_tokens=700,
+    max_chars=280,   # 排查步骤要编号列出，给多一点
 )
 
 BILLING = AgentProfile(
@@ -46,6 +49,8 @@ BILLING = AgentProfile(
     ),
     tool_names=("get_payment_records", "get_refund_status", "get_invoice_status"),
     temperature=0.0,
+    max_tokens=550,
+    max_chars=220,
 )
 
 PROFILES = {p.name: p for p in (GENERAL, TECHNICAL, BILLING)}

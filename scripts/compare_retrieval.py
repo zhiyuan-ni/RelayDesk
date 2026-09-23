@@ -62,7 +62,8 @@ async def evaluate(name: str, search) -> None:
 async def main() -> None:
     kb = KnowledgeBase(Embedder(settings), tempfile.mkdtemp())
     await kb.ensure_ready()
-    llm = LLMClient(settings)
+    llm = LLMClient(settings).for_model(settings.rerank_model)
+    print(f"重排模型: {llm.model}")
     print(f"片段数 {await kb.count()}，向量模型 {settings.embedding_model}，LLM {settings.llm_model}\n")
 
     async def vector_only(q):

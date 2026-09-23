@@ -1,10 +1,10 @@
 {
   "split": "dev",
   "accuracy_ci95": [
-    0.8489,
-    0.9476
+    0.858,
+    0.9532
   ],
-  "generated_at": "2026-09-23 11:10:06",
+  "generated_at": "2026-09-23 10:57:30",
   "model": "qwen3.8-flash",
   "n_cases": 133,
   "per_class_counts": {
@@ -22,8 +22,8 @@
   },
   "reports": {
     "rule": {
-      "accuracy": 0.4737,
-      "macro_f1": 0.4401,
+      "accuracy": 0.4662,
+      "macro_f1": 0.417,
       "per_class": {
         "account_security": {
           "precision": 0.6667,
@@ -62,15 +62,15 @@
           "support": 19
         },
         "other": {
-          "precision": 0.2267,
+          "precision": 0.2237,
           "recall": 0.85,
-          "f1": 0.3579,
+          "f1": 0.3542,
           "support": 20
         },
         "payment_issue": {
-          "precision": 1.0,
-          "recall": 0.1429,
-          "f1": 0.25,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
           "support": 7
         },
         "refund": {
@@ -94,8 +94,8 @@
       }
     },
     "llm": {
-      "accuracy": 0.9098,
-      "macro_f1": 0.924,
+      "accuracy": 0.9173,
+      "macro_f1": 0.9296,
       "per_class": {
         "account_security": {
           "precision": 1.0,
@@ -134,9 +134,9 @@
           "support": 19
         },
         "other": {
-          "precision": 0.8182,
-          "recall": 0.9,
-          "f1": 0.8571,
+          "precision": 0.8261,
+          "recall": 0.95,
+          "f1": 0.8837,
           "support": 20
         },
         "payment_issue": {
@@ -146,9 +146,9 @@
           "support": 7
         },
         "refund": {
-          "precision": 0.9286,
+          "precision": 1.0,
           "recall": 0.9286,
-          "f1": 0.9286,
+          "f1": 0.963,
           "support": 14
         },
         "tech_error": {
@@ -166,8 +166,8 @@
       }
     },
     "fused": {
-      "accuracy": 0.9098,
-      "macro_f1": 0.924,
+      "accuracy": 0.9173,
+      "macro_f1": 0.9296,
       "per_class": {
         "account_security": {
           "precision": 1.0,
@@ -206,9 +206,9 @@
           "support": 19
         },
         "other": {
-          "precision": 0.8182,
-          "recall": 0.9,
-          "f1": 0.8571,
+          "precision": 0.8261,
+          "recall": 0.95,
+          "f1": 0.8837,
           "support": 20
         },
         "payment_issue": {
@@ -218,9 +218,9 @@
           "support": 7
         },
         "refund": {
-          "precision": 0.9286,
+          "precision": 1.0,
           "recall": 0.9286,
-          "f1": 0.9286,
+          "f1": 0.963,
           "support": 14
         },
         "tech_error": {
@@ -275,18 +275,18 @@
       1
     ],
     [
-      "other",
-      "refund",
+      "tech_error",
+      "order_logistics",
       1
     ]
   ],
   "sources": {
-    "llm": 87,
-    "both": 46
+    "llm": 88,
+    "both": 45
   },
   "llm_failures": 0,
   "with_notes": true,
-  "routing_accuracy": 0.9098,
+  "routing_accuracy": 0.9173,
   "intent_model": "qwen-turbo",
   "errors": [
     {
@@ -300,7 +300,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1192,
+      "latency_ms": 1462,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -315,7 +315,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1076,
+      "latency_ms": 1073,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -324,12 +324,12 @@
       "intent": "order_logistics",
       "author": "csds",
       "pred_fused": "tech_error",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1176,
+      "latency_ms": 948,
       "pred_primary": "technical",
       "gold_primary": "general"
     },
@@ -362,7 +362,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 1113,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -371,12 +371,12 @@
       "intent": "human_handoff",
       "author": "csds",
       "pred_fused": "other",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1132,
+      "latency_ms": 1129,
       "pred_primary": "clarify",
       "gold_primary": "escalation"
     },
@@ -391,22 +391,8 @@
       "pred_llm": "human_handoff",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1119,
+      "latency_ms": 1065,
       "pred_primary": "escalation",
-      "gold_primary": "clarify"
-    },
-    {
-      "text": "今天刚到的显示器，但是总感觉有点模糊，这个可以调一下吗?",
-      "intent": "other",
-      "author": "csds",
-      "pred_fused": "refund",
-      "confidence": 0.9,
-      "source": "llm",
-      "pred_llm": "refund",
-      "pred_rule": "other",
-      "llm_failed": false,
-      "latency_ms": 1175,
-      "pred_primary": "billing",
       "gold_primary": "clarify"
     },
     {
@@ -419,7 +405,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1220,
+      "latency_ms": 1244,
       "pred_primary": "clarify",
       "gold_primary": "technical"
     },
@@ -428,12 +414,12 @@
       "intent": "tech_error",
       "author": "csds",
       "pred_fused": "order_logistics",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1230,
+      "latency_ms": 910,
       "pred_primary": "general",
       "gold_primary": "technical"
     },
@@ -442,12 +428,12 @@
       "intent": "tech_error",
       "author": "csds",
       "pred_fused": "other",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1210,
+      "latency_ms": 1369,
       "pred_primary": "clarify",
       "gold_primary": "technical"
     },
@@ -462,7 +448,7 @@
       "pred_llm": "complaint",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 1093,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -477,7 +463,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1017,
+      "latency_ms": 1126,
       "pred_primary": "clarify",
       "gold_primary": "general"
     }
@@ -493,7 +479,7 @@
       "pred_llm": "greeting",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1426,
+      "latency_ms": 1190,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -507,7 +493,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1418,
+      "latency_ms": 1182,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -521,7 +507,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1417,
+      "latency_ms": 1759,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -530,12 +516,12 @@
       "intent": "payment_issue",
       "author": "seed",
       "pred_fused": "payment_issue",
-      "confidence": 1.0,
-      "source": "both",
+      "confidence": 0.95,
+      "source": "llm",
       "pred_llm": "payment_issue",
-      "pred_rule": "payment_issue",
+      "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1543,
+      "latency_ms": 1179,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -549,7 +535,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1180,
+      "latency_ms": 1348,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -563,7 +549,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "human_handoff",
       "llm_failed": false,
-      "latency_ms": 1533,
+      "latency_ms": 923,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -577,7 +563,7 @@
       "pred_llm": "payment_issue",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1127,
+      "latency_ms": 1003,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -591,7 +577,7 @@
       "pred_llm": "payment_issue",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 973,
+      "latency_ms": 1193,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -606,7 +592,7 @@
       "pred_llm": "payment_issue",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1138,
+      "latency_ms": 1868,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -621,7 +607,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1192,
+      "latency_ms": 1462,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -636,7 +622,7 @@
       "pred_llm": "payment_issue",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1174,
+      "latency_ms": 1119,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -657,7 +643,7 @@
       "pred_llm": "payment_issue",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1119,
+      "latency_ms": 1072,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -672,7 +658,7 @@
       "pred_llm": "other",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1247,
+      "latency_ms": 2690,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -687,7 +673,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1170,
+      "latency_ms": 977,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -720,7 +706,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1034,
+      "latency_ms": 1842,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -735,7 +721,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 955,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -750,7 +736,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1500,
+      "latency_ms": 966,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -765,7 +751,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1076,
+      "latency_ms": 1073,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -779,7 +765,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1386,
+      "latency_ms": 1064,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -793,7 +779,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1046,
+      "latency_ms": 1110,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -807,7 +793,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1229,
+      "latency_ms": 941,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -821,7 +807,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1583,
+      "latency_ms": 1040,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -835,7 +821,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1067,
+      "latency_ms": 975,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -868,7 +854,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1026,
+      "latency_ms": 1014,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -883,7 +869,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1015,
+      "latency_ms": 961,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -908,7 +894,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1497,
+      "latency_ms": 1264,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -922,7 +908,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1148,
+      "latency_ms": 1129,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -936,7 +922,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1155,
+      "latency_ms": 1238,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -950,7 +936,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1162,
+      "latency_ms": 1359,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -959,12 +945,12 @@
       "intent": "order_logistics",
       "author": "csds",
       "pred_fused": "tech_error",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1176,
+      "latency_ms": 948,
       "pred_primary": "technical",
       "gold_primary": "general"
     },
@@ -978,7 +964,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1844,
+      "latency_ms": 1126,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -992,7 +978,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1083,
+      "latency_ms": 989,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -1007,7 +993,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1161,
+      "latency_ms": 1129,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -1022,7 +1008,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1083,
+      "latency_ms": 1901,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1037,7 +1023,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1200,
+      "latency_ms": 1130,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -1051,7 +1037,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1382,
+      "latency_ms": 1134,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1065,7 +1051,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 903,
+      "latency_ms": 1003,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1098,7 +1084,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1294,
+      "latency_ms": 1282,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1112,7 +1098,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1006,
+      "latency_ms": 1059,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1126,7 +1112,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1899,
+      "latency_ms": 1042,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1141,7 +1127,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1330,
+      "latency_ms": 1035,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1156,7 +1142,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1132,
+      "latency_ms": 1151,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1170,7 +1156,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1033,
+      "latency_ms": 1013,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1184,7 +1170,7 @@
       "pred_llm": "account_security",
       "pred_rule": "account_security",
       "llm_failed": false,
-      "latency_ms": 1115,
+      "latency_ms": 1690,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1198,7 +1184,7 @@
       "pred_llm": "account_security",
       "pred_rule": "account_security",
       "llm_failed": false,
-      "latency_ms": 1142,
+      "latency_ms": 1138,
       "pred_primary": "escalation",
       "gold_primary": "technical"
     },
@@ -1212,7 +1198,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1093,
+      "latency_ms": 1109,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1226,7 +1212,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1052,
+      "latency_ms": 1080,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1241,7 +1227,7 @@
       "pred_llm": "account_security",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 945,
+      "latency_ms": 990,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1255,7 +1241,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1063,
+      "latency_ms": 1130,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1269,7 +1255,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1007,
+      "latency_ms": 976,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1283,7 +1269,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1042,
+      "latency_ms": 1076,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1297,7 +1283,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1266,
+      "latency_ms": 1023,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1311,7 +1297,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 2162,
+      "latency_ms": 967,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1325,7 +1311,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1184,
+      "latency_ms": 1071,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1339,7 +1325,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1048,
+      "latency_ms": 1027,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1353,7 +1339,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 940,
+      "latency_ms": 1206,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1367,7 +1353,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1128,
+      "latency_ms": 970,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1381,7 +1367,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1089,
+      "latency_ms": 1023,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1390,12 +1376,12 @@
       "intent": "invoice",
       "author": "csds",
       "pred_fused": "invoice",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "invoice",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1270,
+      "latency_ms": 1009,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1409,7 +1395,7 @@
       "pred_llm": "invoice",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1339,
+      "latency_ms": 941,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1423,7 +1409,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1105,
+      "latency_ms": 990,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1437,7 +1423,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1457,
+      "latency_ms": 1100,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1451,7 +1437,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1035,
+      "latency_ms": 1381,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1465,7 +1451,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1699,
+      "latency_ms": 1108,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1479,7 +1465,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 1326,
+      "latency_ms": 1039,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1493,7 +1479,7 @@
       "pred_llm": "invoice",
       "pred_rule": "invoice",
       "llm_failed": false,
-      "latency_ms": 993,
+      "latency_ms": 1238,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1526,7 +1512,7 @@
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 1113,
       "pred_primary": "general",
       "gold_primary": "billing"
     },
@@ -1541,7 +1527,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 994,
+      "latency_ms": 2135,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1569,7 +1555,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "human_handoff",
       "llm_failed": false,
-      "latency_ms": 991,
+      "latency_ms": 977,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -1583,7 +1569,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1160,
+      "latency_ms": 841,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -1597,7 +1583,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 954,
+      "latency_ms": 1053,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -1606,12 +1592,12 @@
       "intent": "human_handoff",
       "author": "csds",
       "pred_fused": "other",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1132,
+      "latency_ms": 1129,
       "pred_primary": "clarify",
       "gold_primary": "escalation"
     },
@@ -1625,7 +1611,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 983,
+      "latency_ms": 1121,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -1635,12 +1621,12 @@
       "author": "csds",
       "note": "要的是配送方电话，见指南第 10 条",
       "pred_fused": "order_logistics",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 938,
+      "latency_ms": 1050,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -1655,7 +1641,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1119,
+      "latency_ms": 1065,
       "pred_primary": "escalation",
       "gold_primary": "clarify"
     },
@@ -1670,7 +1656,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1064,
+      "latency_ms": 929,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1678,14 +1664,14 @@
       "text": "今天刚到的显示器，但是总感觉有点模糊，这个可以调一下吗?",
       "intent": "other",
       "author": "csds",
-      "pred_fused": "refund",
+      "pred_fused": "other",
       "confidence": 0.9,
       "source": "llm",
-      "pred_llm": "refund",
+      "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1175,
-      "pred_primary": "billing",
+      "latency_ms": 1024,
+      "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
     {
@@ -1698,7 +1684,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1218,
+      "latency_ms": 1254,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1712,7 +1698,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1050,
+      "latency_ms": 1023,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1726,7 +1712,7 @@
       "pred_llm": "other",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 990,
+      "latency_ms": 931,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1740,7 +1726,7 @@
       "pred_llm": "other",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1030,
+      "latency_ms": 943,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1754,7 +1740,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 995,
+      "latency_ms": 1228,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1768,7 +1754,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1103,
+      "latency_ms": 1243,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1782,7 +1768,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1241,
+      "latency_ms": 1083,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1796,7 +1782,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1025,
+      "latency_ms": 1110,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1810,7 +1796,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1127,
+      "latency_ms": 1070,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1824,7 +1810,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1144,
+      "latency_ms": 979,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1838,7 +1824,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1536,
+      "latency_ms": 1259,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1853,7 +1839,7 @@
       "pred_llm": "refund",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 919,
+      "latency_ms": 1182,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -1866,7 +1852,7 @@
       "pred_llm": "human_handoff",
       "pred_rule": "human_handoff",
       "llm_failed": false,
-      "latency_ms": 1504,
+      "latency_ms": 1140,
       "pred_primary": "escalation",
       "gold_primary": "escalation"
     },
@@ -1874,12 +1860,12 @@
       "text": "你们公司还招人吗",
       "intent": "other",
       "pred_fused": "other",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1127,
+      "latency_ms": 1003,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1892,7 +1878,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1536,
+      "latency_ms": 1158,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1906,7 +1892,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1170,
+      "latency_ms": 1023,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1919,7 +1905,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1128,
+      "latency_ms": 901,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1932,7 +1918,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1236,
+      "latency_ms": 1002,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -1965,7 +1951,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 983,
+      "latency_ms": 935,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1980,7 +1966,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "account_security",
       "llm_failed": false,
-      "latency_ms": 1822,
+      "latency_ms": 1038,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -1990,12 +1976,12 @@
       "note": "见指南第 9 条：忘记密码、收不到验证码标 tech_login，绑定手机已换需改绑标 account_security",
       "author": "csds",
       "pred_fused": "tech_login",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "tech_login",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 1020,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2009,7 +1995,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 944,
+      "latency_ms": 966,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2023,7 +2009,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 1046,
+      "latency_ms": 1112,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2037,7 +2023,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 1080,
+      "latency_ms": 1049,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2051,7 +2037,7 @@
       "pred_llm": "tech_login",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 1124,
+      "latency_ms": 1305,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2066,7 +2052,7 @@
       "pred_llm": "account_security",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1306,
+      "latency_ms": 1526,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2081,7 +2067,7 @@
       "pred_llm": "account_security",
       "pred_rule": "tech_login",
       "llm_failed": false,
-      "latency_ms": 1481,
+      "latency_ms": 1751,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2090,12 +2076,12 @@
       "intent": "tech_error",
       "author": "csds",
       "pred_fused": "tech_error",
-      "confidence": 0.95,
+      "confidence": 0.9,
       "source": "llm",
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1366,
+      "latency_ms": 1292,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2109,7 +2095,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1220,
+      "latency_ms": 1244,
       "pred_primary": "clarify",
       "gold_primary": "technical"
     },
@@ -2118,12 +2104,12 @@
       "intent": "tech_error",
       "author": "csds",
       "pred_fused": "order_logistics",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "order_logistics",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1230,
+      "latency_ms": 910,
       "pred_primary": "general",
       "gold_primary": "technical"
     },
@@ -2137,7 +2123,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1040,
+      "latency_ms": 1121,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2151,7 +2137,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1768,
+      "latency_ms": 1091,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2165,7 +2151,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1117,
+      "latency_ms": 926,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2174,12 +2160,12 @@
       "intent": "tech_error",
       "author": "csds",
       "pred_fused": "other",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1210,
+      "latency_ms": 1369,
       "pred_primary": "clarify",
       "gold_primary": "technical"
     },
@@ -2194,7 +2180,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1127,
+      "latency_ms": 880,
       "pred_primary": "clarify",
       "gold_primary": "clarify"
     },
@@ -2218,7 +2204,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1374,
+      "latency_ms": 1588,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2231,7 +2217,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1130,
+      "latency_ms": 1153,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2244,7 +2230,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "tech_error",
       "llm_failed": false,
-      "latency_ms": 1028,
+      "latency_ms": 1404,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2257,7 +2243,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1229,
+      "latency_ms": 1054,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2276,7 +2262,7 @@
       "pred_llm": "tech_error",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 2190,
+      "latency_ms": 1193,
       "pred_primary": "technical",
       "gold_primary": "technical"
     },
@@ -2285,12 +2271,12 @@
       "intent": "complaint",
       "author": "csds",
       "pred_fused": "complaint",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "complaint",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1169,
+      "latency_ms": 905,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2299,12 +2285,12 @@
       "intent": "complaint",
       "author": "csds",
       "pred_fused": "complaint",
-      "confidence": 0.9,
+      "confidence": 0.95,
       "source": "llm",
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1044,
+      "latency_ms": 1023,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2318,7 +2304,7 @@
       "pred_llm": "complaint",
       "pred_rule": "complaint",
       "llm_failed": false,
-      "latency_ms": 1113,
+      "latency_ms": 967,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2332,7 +2318,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1027,
+      "latency_ms": 1095,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2346,7 +2332,7 @@
       "pred_llm": "complaint",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1584,
+      "latency_ms": 1062,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2360,7 +2346,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 924,
+      "latency_ms": 922,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2374,7 +2360,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1285,
+      "latency_ms": 1195,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2388,7 +2374,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1215,
+      "latency_ms": 1163,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2402,7 +2388,7 @@
       "pred_llm": "complaint",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1027,
+      "latency_ms": 929,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2417,7 +2403,7 @@
       "pred_llm": "refund",
       "pred_rule": "refund",
       "llm_failed": false,
-      "latency_ms": 1204,
+      "latency_ms": 958,
       "pred_primary": "billing",
       "gold_primary": "billing"
     },
@@ -2432,7 +2418,7 @@
       "pred_llm": "complaint",
       "pred_rule": "order_logistics",
       "llm_failed": false,
-      "latency_ms": 1126,
+      "latency_ms": 1093,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2447,7 +2433,7 @@
       "pred_llm": "other",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1017,
+      "latency_ms": 1126,
       "pred_primary": "clarify",
       "gold_primary": "general"
     },
@@ -2461,7 +2447,7 @@
       "pred_llm": "greeting",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1162,
+      "latency_ms": 1089,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2475,7 +2461,7 @@
       "pred_llm": "greeting",
       "pred_rule": "other",
       "llm_failed": false,
-      "latency_ms": 1046,
+      "latency_ms": 1126,
       "pred_primary": "general",
       "gold_primary": "general"
     },
@@ -2489,7 +2475,7 @@
       "pred_llm": "greeting",
       "pred_rule": "greeting",
       "llm_failed": false,
-      "latency_ms": 1125,
+      "latency_ms": 966,
       "pred_primary": "general",
       "gold_primary": "general"
     }

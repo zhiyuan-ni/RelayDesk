@@ -67,3 +67,11 @@ def test_judge_parse_handles_code_fence_and_rejects_bad_scores():
     assert (s.factual, s.helpful, s.policy, s.overall) == (5, 4, 3, 4.0)
     assert parse_score('{"factual": 9, "helpful": 4, "policy": 3}') is None
     assert parse_score("我觉得挺好的") is None
+
+
+def test_9_agents_in_any_order():
+    exp = TurnExpectation(agents=["billing", "technical"])
+    assert check_turn(outcome(primary="technical", supporting=["billing"]), exp) == []
+    assert check_turn(outcome(primary="billing", supporting=["technical"]), exp) == []
+    fails = check_turn(outcome(primary="technical", supporting=[]), exp)
+    assert len(fails) == 1 and "billing" in fails[0]

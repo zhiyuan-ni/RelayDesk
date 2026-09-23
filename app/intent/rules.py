@@ -11,7 +11,9 @@ from app.intent.schema import Intent, Urgency, Vote
 # 字典顺序即优先级：命中数相同时，靠前的赢。转人工放最前，因为用户明确要求时必须尊重。
 KEYWORDS: dict[Intent, list[str]] = {
     Intent.HUMAN_HANDOFF: ["转人工", "人工客服", "找人工", "真人", "找你们经理"],
-    Intent.PAYMENT_ISSUE: ["重复扣款", "扣了两次", "多扣", "乱扣", "支付失败", "付款失败", "扣费"],
+    # 复合问题的第二个诉求常靠这张表才能被路由看见，所以口语变体要尽量覆盖
+    Intent.PAYMENT_ISSUE: ["重复扣款", "扣了两次", "扣两次", "扣了我两次", "扣了两笔", "两笔", "付了两次", "付了两遍",
+                           "重复支付", "多扣", "乱扣", "支付失败", "付款失败", "扣费"],
     Intent.REFUND: ["退款", "退货", "退钱", "换货", "退换", "维修", "保修", "返修", "补发", "refund"],
     Intent.INVOICE: ["发票", "抬头", "税号", "invoice"],
     Intent.ACCOUNT_SECURITY: ["被盗", "异常登录", "改密码", "重置密码", "修改邮箱", "换绑", "注销账"],
