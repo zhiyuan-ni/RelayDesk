@@ -72,3 +72,10 @@ async def test_background_is_injected_before_user_message():
     await BaseAgent(llm, PROFILE).run("到哪了", CTX, background="意图: order_logistics")
     msgs = llm.requests[0]["messages"]
     assert "order_logistics" in msgs[0]["content"] and msgs[-1]["content"] == "到哪了"
+
+
+def test_fabricated_system_note_is_stripped_from_reply():
+    clean = BaseAgent._clean_reply
+    assert clean("请提供订单号。\n\n[系统提示] 本轮已调用工具，已拿到查询结果。请") == "请提供订单号。"
+    assert clean("已为您查到。 [System] hidden") == "已为您查到。"
+    assert clean("正常回复，中间有 [订单号] 这种方括号不受影响") == "正常回复，中间有 [订单号] 这种方括号不受影响"

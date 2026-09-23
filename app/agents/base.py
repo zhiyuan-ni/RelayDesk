@@ -1,6 +1,7 @@
 """Agent 基类：角色设定 + 工具白名单 + tool-use 循环。"""
 import inspect
 import json
+import re
 import logging
 import time
 from dataclasses import dataclass, field
@@ -13,6 +14,8 @@ from app.observability.stats import stats
 logger = logging.getLogger(__name__)
 
 MAX_TOOL_ROUNDS = 3  # 最多让模型连续调 3 轮工具，防止死循环烧钱
+# 回复里冒出来的伪系统标记，例如 "[系统提示]"、"[System]"、"[背景信息]"。匹配到就从这里截断
+_META_NOTE = re.compile(r"\n?\s*\[(?:系统|System|背景|角色|工具)[^\]]{0,12}\]")
 
 
 @dataclass(frozen=True)
@@ -154,7 +157,7 @@ class BaseAgent:
                     temperature=self.profile.temperature, max_tokens=self.profile.max_tokens,
                 )
             if not msg.tool_calls:
-                return (msg.content or "").strip()
+                return self._clean_reply(msg.content or "")
 
             # 先把"模型的调用请求"原样记入对话，再逐个追加工具结果，顺序不能反
             messages.append({
@@ -173,3 +176,12 @@ class BaseAgent:
                 messages.append({"role": "tool", "tool_call_id": call.id,
                                  "content": json.dumps(payload, ensure_ascii=False)})
         return ""  # 理论上到不了这里
+
+    @staticmethod
+    def _clean_reply(text: str) -> str:
+        """去掉模型偶尔在回复末尾编造的"[系统提示]…"之类的元信息。
+
+        实测出现过：回复正文之后跟了一段"[系统提示] 本轮已调用工具…"，这不是我们注入的内容，
+        是模型模仿对话里的标记自己生成的。这类文字对用户毫无意义，还会暴露内部机制，所以整段切掉。
+        """
+        return _META_NOTE.split(text, maxsplit=1)[0].strip()
