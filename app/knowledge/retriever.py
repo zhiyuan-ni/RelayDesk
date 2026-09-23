@@ -34,29 +34,7 @@ class RetrievalResult:
 
 
 def merge_hits(hit_lists: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """合并多路召回结果：去重，同一片段保留最高分，按分数从高到低排序。
-
-    ───────────── 练习：请你实现 ─────────────
-    输入是"列表的列表"，每个内层列表是一次检索的结果，每条结果是一个字典：
-        {"title": ..., "section": ..., "text": ..., "score": 0.71}
-    同一个片段可能被多个查询同时召回，分数各不相同。
-
-    规格，对应 tests/test_retriever.py：
-      1. 输入为空，或内层全为空          -> []
-      2. 用 (title, section, text) 三者组成的元组判断"是不是同一个片段"
-      3. 同一个片段出现多次时，只保留 score 最高的那一条
-      4. 返回的列表按 score 从高到低排序
-
-    提示：
-      - 用一个字典 best 来去重，键是那个三元组，值是目前见过的最高分的那条结果
-            key = (hit["title"], hit["section"], hit["text"])
-            if key not in best or hit["score"] > best[key]["score"]:
-                best[key] = hit
-      - 两层 for 循环：外层遍历 hit_lists，内层遍历每个列表里的 hit
-      - 最后 sorted(best.values(), key=lambda h: h["score"], reverse=True)
-        lambda h: h["score"] 是一个匿名小函数，意思是"给我一条结果 h，我返回它的分数"，sorted 按这个值排序
-    大约 8 行。
-    """
+    """合并多路召回结果：按 (标题, 小节, 正文) 去重，同一片段保留最高分，按分数从高到低排序。"""
     best: dict[tuple, dict[str, Any]] = {}   # 键是片段的身份，值是目前见过的分数最高的那条
     for hits in hit_lists:
         for hit in hits:

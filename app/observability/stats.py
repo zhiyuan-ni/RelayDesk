@@ -15,22 +15,9 @@ WINDOW = 500
 
 
 def percentile(values: list[float], p: float) -> float:
-    """最近邻法计算分位数。values 可以是无序的，p 取 0 到 100。
+    """最近邻法计算分位数。values 可以是无序的，p 取 0 到 100，空列表返回 0.0，不修改传入的列表。
 
-    ───────────── 练习：请你实现 ─────────────
-    规格，对应 tests/test_stats.py：
-      1. values 为空 -> 0.0
-      2. 先把 values 排序（不要修改传入的列表，用 sorted 得到新列表）
-      3. 位置 index = ceil(p / 100 * n) - 1，再限制在 0 到 n-1 之间
-         含义：P95 就是"排在前 95% 的那个位置上的值"
-         math.ceil 是向上取整；限制范围可以用 max(0, min(n - 1, index))
-      4. 返回 sorted_values[index]
-
-    例子：values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-      P50 -> ceil(5) - 1 = 4  -> 5
-      P95 -> ceil(9.5) - 1 = 9 -> 10
-      P0  -> ceil(0) - 1 = -1 -> 限制为 0 -> 1
-    4 行左右。
+    位置 = ceil(p / 100 * n) - 1，再限制在 0 到 n-1。P95 就是"排在前 95% 的那个位置上的值"。
     """
     n = len(values)
     if n == 0:

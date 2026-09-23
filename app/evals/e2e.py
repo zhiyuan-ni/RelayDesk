@@ -38,28 +38,10 @@ class TurnOutcome:
 
 
 def check_turn(outcome: TurnOutcome, expect: TurnExpectation) -> list[str]:
-    """逐项核对，返回所有未通过项的描述。空列表表示全部通过。
+    """逐项核对一轮对话的实际结果与期望，返回所有未通过项的说明，空列表表示全部通过。
 
-    ───────────── 练习：请你实现 ─────────────
-    每一项不通过就往结果列表里追加一句人能看懂的说明，例如 "主 Agent 期望 billing，实际 general"。
-    不要在第一个失败处就返回，要把所有失败项都列出来，这样一次运行就能看到全部问题。
-
-    规格，对应 tests/test_e2e_checks.py：
-        1. expect.action 非空且与 outcome.action 不同         -> 记一条
-        2. expect.primary 非空且与 outcome.primary 不同       -> 记一条
-        3. expect.supporting 里每个不在 outcome.supporting 中的 -> 各记一条
-        4. expect.tools 里每个不在 outcome.tools_called 中的     -> 各记一条
-        5. expect.tools_none：
-            如果是 ["*"]，outcome.tools_called 非空             -> 记一条，说明里列出实际调了什么
-            否则其中每个出现在 outcome.tools_called 里的        -> 各记一条
-        6. expect.contain_any 非空，且没有任何一个出现在回复里   -> 记一条
-        7. expect.contain_all 里每个没出现在回复里的             -> 各记一条
-        8. expect.contain_none 里每个出现在回复里的              -> 各记一条
-
-    提示：
-        - 字符串包含判断： "订单号" in outcome.response
-        - "至少有一个"： any(s in outcome.response for s in expect.contain_any)
-    大约 20 行，全是 if 和 for。
+    不在第一个失败处返回，而是列出全部失败项，这样跑一次就能看到所有问题。
+    核对的项目见 TurnExpectation 各字段的注释。
     """
     failures = []
     if expect.action and outcome.action != expect.action:

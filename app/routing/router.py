@@ -63,26 +63,9 @@ def domain_scores(intent: IntentResult, message: str) -> dict[str, float]:
 def decide(intent: IntentResult, message: str) -> RoutingDecision:
     """产出路由决策。
 
-    ───────────── 练习：请你实现 ─────────────
-    第一行先算分，四种情况返回的 RoutingDecision 都要带上 scores：
-        scores = domain_scores(intent, message)
-
-    规格，对应 tests/test_router_decide.py，按顺序判断，命中即返回：
-      1. intent.urgency 是 Urgency.CRITICAL
-           -> action="escalate", primary="escalation", supporting=[], reason 里包含 "CRITICAL"
-      2. intent.group 是 Group.ESCALATION，也就是用户要求转人工
-           -> action="escalate", primary="escalation", supporting=[], reason 里包含意图的值，即 intent.intent.value
-      3. intent.intent 是 Intent.OTHER，也就是没看懂
-           -> action="clarify", primary="general", supporting=[]
-      4. 其余情况 action="answer"：
-           primary    = scores 里分数最高的域
-                        提示：max(scores, key=scores.get)
-           supporting = 其余的域里，同时满足下面两条的，按分数从高到低排列
-                          a. 不是 "general"，通用客服只当主答或兜底，不当辅助
-                          b. 分数 >= SUPPORT_MIN
-                        提示：先用列表推导式筛选，再 sorted(..., key=scores.get, reverse=True)
-           reason     = 任意可读字符串，要求包含 primary 的名字
-                        建议形如 "intent=tech_login primary=technical supporting=['billing'] scores={...}"
+    按顺序判断：紧急度 CRITICAL 或用户要求转人工则升级；意图为 OTHER 则反问澄清；
+    其余取分数最高的域为主 Agent，其他分数达到 SUPPORT_MIN 的专业域按分数排序作为辅助 Agent。
+    通用客服只做主答或兜底，不做辅助。
     """
     scores = domain_scores(intent, message)
     tag = f"intent={intent.intent.value} conf={intent.confidence}"  # 每条 reason 的公共前缀

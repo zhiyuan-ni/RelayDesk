@@ -52,18 +52,11 @@ class AgentReply:
 async def execute_tool_call(
     tools: dict[str, ToolSpec], name: str, raw_args: str, ctx: ToolContext
 ) -> dict[str, Any]:
-    """执行模型要求的一次工具调用，返回一条 trace 字典。永远不向外抛异常。
+    """执行模型要求的一次工具调用，返回一条 trace 字典，永远不向外抛异常。
 
-    ───────────── 练习：请你实现 ─────────────
-    参数：
-      tools     当前 Agent 的白名单，键是工具名
-      name      模型想调用的工具名
-      raw_args  模型给的参数，是一个 JSON 字符串，例如 '{"order_id": "A12345"}'
-      ctx       请求上下文，原样传给工具函数
-
-    返回的字典必须包含这 6 个键：
-      {"tool": name, "args": 解析后的参数字典, "success": 布尔,
-       "data": 工具返回值或 None, "error": 错误说明或 "", "latency_ms": 耗时}
+    返回的字典含 tool、args、success、data、error、latency_ms 六个键。
+    以下情况都视为失败并写明原因，交给模型自行处理：工具不在白名单、参数不是合法的 JSON 对象、
+    缺少必填参数、工具函数抛出异常。工具函数可以是同步或异步的。
     """
     t0 = time.monotonic()
     trace = {"tool": name, "args": {}, "success": False,
