@@ -1,7 +1,7 @@
 """检索器测试：merge_hits 的规格，加上改写、重排和各级降级。"""
 import json
 
-from app.knowledge.retriever import Retriever, apply_order, merge_hits
+from app.knowledge.retriever import Retriever, apply_order, build_rerank_questions, merge_hits, order_by_noul
 
 
 def hit(name: str, score: float) -> dict:
@@ -117,3 +117,62 @@ async def test_slow_rerank_times_out_but_recall_results_survive():
 
     r = await Retriever(FakeKB(), SlowLLM(), rewrite=False, rerank_timeout_s=0.05).retrieve(Q, top_k=2)
     assert not r.reranked and [h["section"] for h in r.hits] == ["短信验证码", "两步验证"] and r.latency_ms < 1000
+
+
+# ── jev 重排 ──
+
+
+class FakeJev:
+    """按片段所在小节返回预设的"是"的概率，并记录收到的 state 和题目。"""
+    def __init__(self, scores=None, error=None, drop=()):
+        self.scores, self.error, self.drop, self.calls = scores or {}, error, set(drop), []
+
+    async def ask(self, state, questions):
+        self.calls.append((state, questions))
+        if self.error:
+            raise self.error
+        answers = {}
+        for qid, q in questions.items():
+            section = q["instructions"]["片段"].split(" / ")[1].split("：")[0]
+            if section not in self.drop:
+                answers[qid] = {"type": "noul", "noul": self.scores.get(section, 0.1)}
+        return answers
+
+
+class NoLLM:
+    async def chat_text(self, prompt, **kwargs):
+        raise AssertionError("选了 jev 重排却调用了 LLM")
+
+
+async def test_jev_rerank_orders_by_noul():
+    jev = FakeJev({"两步验证": 0.9, "短信验证码": 0.3, "修改手机": 0.5})
+    r = await Retriever(FakeKB(), NoLLM(), rewrite=False, jev=jev).retrieve(Q, top_k=2)
+    assert r.reranked and [h["section"] for h in r.hits] == ["两步验证", "修改手机"]
+    state, questions = jev.calls[0]
+    assert state == {"用户问题": Q}                         # state 只放问题，片段在各自的题目里
+    assert len(questions) == 3 and all(q["type"] == "noul" for q in questions.values())
+
+
+def test_order_by_noul_breaks_ties_by_vector_order():
+    answers = {"c0": {"noul": 0.4}, "c1": {"noul": 0.8}, "c2": {"noul": 0.8}}
+    assert order_by_noul(answers, 3) == [1, 2, 0]           # c1 与 c2 同分，保持召回时的先后
+
+
+async def test_jev_missing_answer_degrades_to_vector_order():
+    jev = FakeJev({"两步验证": 0.9}, drop={"修改手机"})
+    r = await Retriever(FakeKB(), NoLLM(), rewrite=False, jev=jev).retrieve(Q, top_k=2)
+    assert not r.reranked and [h["section"] for h in r.hits] == ["短信验证码", "两步验证"]
+
+
+async def test_jev_error_degrades_to_vector_order():
+    jev = FakeJev(error=TimeoutError("jev 超时"))
+    r = await Retriever(FakeKB(), NoLLM(), rewrite=False, jev=jev).retrieve(Q, top_k=2)
+    assert not r.reranked and [h["section"] for h in r.hits] == ["短信验证码", "两步验证"]
+
+
+def test_rerank_questions_carry_their_own_passage():
+    long_text = "很长" * 500
+    qs = build_rerank_questions([hit("甲", 0.9), {"title": "文档", "section": "乙", "text": long_text, "score": 0.5}])
+    assert list(qs) == ["c0", "c1"]
+    assert "甲的内容" in qs["c0"]["instructions"]["片段"] and "甲" not in qs["c1"]["instructions"]["片段"]
+    assert len(qs["c1"]["instructions"]["片段"]) < 500      # 片段截断，不会把整篇文档塞进题目
