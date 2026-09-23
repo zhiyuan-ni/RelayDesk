@@ -82,10 +82,10 @@ async def run_agents(
 
 class Orchestrator:
     def __init__(self, llm, shared_tools: Optional[dict[str, ToolSpec]] = None, memory=None,
-                 intent_llm=None):
+                 intent_llm=None, intent_jev=None):
         self._llm = llm
         self._memory = memory   # 为 None 时系统无记忆，每条消息独立处理
-        self._recognizer = IntentRecognizer(intent_llm or llm)
+        self._recognizer = IntentRecognizer(intent_llm or llm, jev=intent_jev)
         self._agents: dict[str, Any] = {
             name: BaseAgent(llm, profile, shared_tools) for name, profile in PROFILES.items()
         }

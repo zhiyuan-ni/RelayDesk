@@ -9,6 +9,10 @@
   1. 在 evals/intent_cases.jsonl 上跑完整的意图识别，计算准确率、宏平均 F1 和各类别指标
   2. 消融对比：只用规则、只用 LLM、两路融合，各自的指标。用来回答"两路融合到底有没有用"
   3. 列出最常见的误判和每一条错例，指导下一步改进
+  4. 置信度分档：每档的实际准确率。高档明显比低档准，融合阈值才有意义
+
+模型那一票由 INTENT_BACKEND 决定（llm 或 jev），和线上一致。对比两者：
+  INTENT_BACKEND=jev uv run python scripts/eval_intent.py --split dev --tag jev
 
 每条样本只调用一次模型，三种模式的结果都从同一次调用里推导，保证对比公平，也省钱。
 报告写入 evals/reports/intent_latest.json，随代码一起提交，作为简历数字的依据。
@@ -27,12 +31,14 @@ sys.path.insert(0, str(ROOT))
 
 from app.config import settings  # noqa: E402
 from app.evals.metrics import classification_report, confusion_pairs  # noqa: E402
+from app.intent.jev_classifier import jev_vote  # noqa: E402
 from app.intent.llm_classifier import FEW_SHOTS, llm_vote  # noqa: E402
 from app.intent.recognizer import fuse  # noqa: E402
 from app.intent.rules import rule_vote  # noqa: E402
 from app.intent.rules import detect_urgency, extract_entities  # noqa: E402
 from app.intent.schema import INTENT_GROUP, Intent, IntentResult  # noqa: E402
 from app.routing.router import decide  # noqa: E402
+from app.jev import JevClient  # noqa: E402
 from app.llm import LLMClient  # noqa: E402
 
 CASES_PATH = ROOT / "evals" / "intent_cases.jsonl"
@@ -40,6 +46,7 @@ REPORT_PATH = ROOT / "evals" / "reports" / "intent_latest.json"
 CONCURRENCY = 5          # 同时进行的模型调用数。太高会被中转站限流
 DEV_SHARE = 0.4          # 开发集占比。按文本哈希划分，新增样本不会让旧样本换边
 MIN_PER_CLASS = 8        # 每类少于这个数，该类的指标波动太大，没有参考价值
+CONF_BANDS = [(0.0, 0.5), (0.5, 0.7), (0.7, 0.9), (0.9, 1.01)]
 
 
 def load_cases() -> list[dict]:
@@ -113,14 +120,29 @@ async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
     if split != "all":
         cases = [c for c in cases if split_of(c) == split]
         print(f"只评测 {split} 部分，共 {len(cases)} 条\n")
-    llm = LLMClient(settings).for_model(settings.intent_model)   # 评测和线上用同一个意图模型
-    print(f"意图模型: {llm.model}\n")
+    backend = settings.intent_backend
+    llm, jev = None, None
+    if backend == "jev":
+        if not with_notes:
+            raise SystemExit("--no-notes 只适用于 llm 后端。jev 的题目就是由意图说明构成的，去掉就没有题目了")
+        jev = JevClient(settings)
+        # 同时发 CONCURRENCY 个预热请求，连接池里就有这么多条建好的连接。
+        # 只预热一条的话，其余并发请求各自冷启动，前几条的延迟里含约 5 秒建连时间
+        await asyncio.gather(*[jev.warmup() for _ in range(CONCURRENCY)])
+        intent_model = jev.model
+    else:
+        llm = LLMClient(settings).for_model(settings.intent_model)   # 评测和线上用同一个意图模型
+        intent_model = llm.model
+    print(f"意图后端: {backend}，模型: {intent_model}\n")
     gate = asyncio.Semaphore(CONCURRENCY)
 
     async def run_one(case: dict) -> dict:
         async with gate:   # 信号量：最多同时放 CONCURRENCY 个进去，其余排队
             t0 = time.monotonic()
-            llm_v = await llm_vote(llm, case["text"], case.get("history"), with_notes=with_notes)
+            if jev is not None:
+                llm_v = await jev_vote(jev, case["text"], case.get("history"))
+            else:
+                llm_v = await llm_vote(llm, case["text"], case.get("history"), with_notes=with_notes)
             ms = (time.monotonic() - t0) * 1000
         rule_v = rule_vote(case["text"])
         fused, conf, source = fuse(llm_v, rule_v)
@@ -130,6 +152,9 @@ async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
             "pred_llm": fuse(llm_v, None)[0].value,
             "pred_rule": fuse(None, rule_v)[0].value,
             "llm_failed": llm_v is None, "latency_ms": round(ms),
+            # 融合前模型自己的预测和置信度。pred_llm 经过了 MIN_CONF，低置信度会被改成 other，不能用来看校准
+            "model_raw": llm_v.intent.value if llm_v else None,
+            "model_confidence": round(llm_v.confidence, 3) if llm_v else None,
             "pred_primary": routed_primary(case["text"], fused, conf),
             "gold_primary": expected_primary(Intent(case["intent"])),
         }
@@ -137,12 +162,14 @@ async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
     t0 = time.monotonic()
     rows = await asyncio.gather(*[run_one(c) for c in cases])
     wall = time.monotonic() - t0
+    if jev is not None:
+        await jev.aclose()
 
     y_true = [r["intent"] for r in rows]
     reports = {mode: classification_report(y_true, [r[f"pred_{mode}"] for r in rows]) for mode in ("rule", "llm", "fused")}
 
     print(f"{'模式':<10}{'准确率':>10}{'宏平均F1':>12}")
-    for mode, name in (("rule", "仅规则"), ("llm", "仅 LLM"), ("fused", "两路融合")):
+    for mode, name in (("rule", "仅规则"), ("llm", f"仅 {backend}"), ("fused", "两路融合")):
         print(f"{name:<10}{reports[mode]['accuracy']:>12.1%}{reports[mode]['macro_f1']:>12.4f}")
 
     lo, hi = wilson_interval(sum(t == p for t, p in zip(y_true, [r["pred_fused"] for r in rows])), len(rows))
@@ -169,8 +196,18 @@ async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
     failed = sum(r["llm_failed"] for r in rows)
     routing_ok = sum(r["pred_primary"] == r["gold_primary"] for r in rows)
     print(f"\n路由准确率（主 Agent 选对）: {routing_ok}/{len(rows)} = {routing_ok / len(rows):.1%}")
-    print(f"\n结论来源: {dict(sources)}   LLM 调用失败: {failed}")
-    print(f"单次 LLM 延迟: 中位数 {latencies[len(latencies) // 2]}ms，最大 {latencies[-1]}ms；总耗时 {wall:.0f}s")
+    print(f"\n结论来源: {dict(sources)}   模型调用失败: {failed}")
+    print(f"单次模型延迟: 中位数 {latencies[len(latencies) // 2]}ms，P90 {latencies[int(len(latencies) * 0.9)]}ms，"
+          f"最大 {latencies[-1]}ms；总耗时 {wall:.0f}s")
+
+    calibration = []
+    print(f"\n{backend} 自身置信度分档（融合前，看置信度有没有区分度）:")
+    for lo_b, hi_b in CONF_BANDS:
+        band = [r for r in rows if r["model_confidence"] is not None and lo_b <= r["model_confidence"] < hi_b]
+        if band:
+            acc = sum(r["model_raw"] == r["intent"] for r in band) / len(band)
+            calibration.append({"band": [lo_b, min(hi_b, 1.0)], "n": len(band), "accuracy": round(acc, 4)})
+            print(f"  [{lo_b:.1f}, {min(hi_b, 1.0):.1f})  {len(band):>4} 条  准确率 {acc:.1%}")
 
     variant = ("" if with_notes else "_no_notes") + (f"_{tag}" if tag else "")
     stem = "intent_latest" if split == "all" else f"intent_{split}"
@@ -183,7 +220,7 @@ async def main(split: str, with_notes: bool = True, tag: str = "") -> None:
         "per_class_counts": dict(Counter(y_true)),
         "reports": reports, "confusions": pairs, "sources": dict(sources), "llm_failures": failed,
         "with_notes": with_notes, "routing_accuracy": round(routing_ok / len(rows), 4),
-        "intent_model": llm.model,
+        "intent_backend": backend, "intent_model": intent_model, "calibration": calibration,
         "errors": [r for r in rows if r["pred_fused"] != r["intent"]],
         "rows": rows,   # 全部样本的预测结果，用于事后分析，例如规则和 LLM 不一致时谁更可靠
     }, ensure_ascii=False, indent=2), encoding="utf-8")

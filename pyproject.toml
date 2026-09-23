@@ -5,6 +5,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "chromadb>=1.0",
     "fastapi>=0.115",
+    "httpx>=0.28.1",
     "openai>=1.55",
     "pydantic>=2.9",
     "python-dotenv>=1.0",
@@ -15,7 +16,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "fakeredis>=2.26",
-    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
