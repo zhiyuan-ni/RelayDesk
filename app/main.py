@@ -17,6 +17,7 @@ from app.llm import LLMClient
 from app.memory.longterm import LongTermMemory
 from app.memory.manager import MemoryManager
 from app.memory.store import ConversationStore
+from app.observability.stats import stats
 from app.orchestrator import Orchestrator
 from app.reliability.breaker import CircuitBreaker
 from app.reliability.cache import TTLCache
@@ -129,11 +130,19 @@ class ChatResponse(BaseModel):
     tool_traces: list[dict[str, Any]]
     # 记忆
     memories_used: list[str]
+    # 各环节耗时
+    timeline: list[dict[str, Any]]
 
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "model": settings.llm_model}
+
+
+@app.get("/metrics")
+async def metrics():
+    """运行期统计：各环节、各 Agent、各工具的调用次数、成功率和延迟分位数，只统计最近 500 次。"""
+    return stats.snapshot()
 
 
 @app.post("/search")
@@ -174,4 +183,5 @@ async def chat(req: ChatRequest, orch: Orchestrator = Depends(get_orchestrator))
         routing_reason=decision.reason,
         tool_traces=result.tool_traces,
         memories_used=result.memories_used,
+        timeline=result.timeline,
     )

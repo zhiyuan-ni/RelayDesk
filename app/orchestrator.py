@@ -18,6 +18,8 @@ from app.agents.tools import ToolContext, ToolSpec
 from app.intent.recognizer import IntentRecognizer
 from app.intent.schema import IntentResult
 from app.memory.manager import MemoryContext
+from app.observability import tracer
+from app.observability.stats import stats
 from app.routing.router import RoutingDecision, decide
 
 logger = logging.getLogger(__name__)
@@ -43,6 +45,14 @@ class OrchestratorResult:
     tool_traces: list[dict[str, Any]] = field(default_factory=list)
     memories_used: list[str] = field(default_factory=list)   # 本次从长期记忆里想起的内容
     latency_ms: float = 0.0
+    timeline: list[dict[str, Any]] = field(default_factory=list)   # 各环节耗时，见 observability/tracer.py
+
+
+async def _run_one_agent(agent, name: str, message: str, ctx: ToolContext, background: str, history) -> AgentReply:
+    async with tracer.span(f"agent:{name}"):
+        reply = await agent.run(message, ctx, background, history)
+    stats.record("agent", name, reply.latency_ms, reply.success)
+    return reply
 
 
 async def run_agents(
@@ -68,7 +78,7 @@ async def run_agents(
     大约 8 行。
     """
     # 这里只是创建协程，还没有开始执行。不能写 await，否则会变成一个接一个地串行。
-    coros = [agents[name].run(message, ctx, background, history) for name in names]
+    coros = [_run_one_agent(agents[name], name, message, ctx, background, history) for name in names]
 
     # gather 让它们同时开始，并按传入顺序返回结果。
     # return_exceptions=True：某个 Agent 抛异常时，异常对象会出现在结果列表的对应位置，不影响其他 Agent。
@@ -97,15 +107,17 @@ class Orchestrator:
     async def handle(self, message: str, user_id: str, conv_id: str = "") -> OrchestratorResult:
         t0 = time.monotonic()
         request_id = uuid.uuid4().hex[:8]
+        timeline = tracer.start_timeline(request_id)
 
-        mem = await self._load_memory(user_id, conv_id)
+        async with tracer.span("memory_load"):
+            mem = await self._load_memory(user_id, conv_id)
         history = mem.history()
 
         # 意图识别和长期记忆检索互不依赖，同时进行。前者约 1.5 秒，后者约 1 秒，并行后不增加总耗时。
         # 意图识别带上最近两轮。"订单号是 A12345"这种话，脱离上文无法判断用户想干什么
         intent, memories = await asyncio.gather(
-            self._recognizer.recognize(message, history[-4:] or None),
-            self._recall(user_id, conv_id, message),
+            self._timed("intent", self._recognizer.recognize(message, history[-4:] or None)),
+            self._timed("memory_recall", self._recall(user_id, conv_id, message)),
         )
         decision = decide(intent, message)
         # 只收集用户说过的话，不含助手的回复。否则模型上一轮编出来的订单号，下一轮就变成"出现过"了
@@ -127,9 +139,17 @@ class Orchestrator:
                 background += "\n" + TEAMWORK_NOTE
             replies = await run_agents(self._agents, names, message, ctx, background, history)
             replies = await self._fallback_if_primary_failed(replies, decision, message, ctx, background, history)
-            response = await self._compose(message, replies)
+            async with tracer.span("compose", agents=len([r for r in replies if r.success])):
+                response = await self._compose(message, replies)
 
-        await self._save_memory(user_id, conv_id, message, response)
+        async with tracer.span("memory_save"):
+            await self._save_memory(user_id, conv_id, message, response)
+
+        total_ms = round((time.monotonic() - t0) * 1000, 1)
+        stats.record("stage", "request", total_ms)
+        logger.info("[%s] 完成 %.0fms action=%s primary=%s tools=%s",
+                    request_id, total_ms, decision.action, decision.primary,
+                    [t["tool"] for r in replies for t in r.tool_traces])
 
         return OrchestratorResult(
             request_id=request_id,
@@ -139,8 +159,15 @@ class Orchestrator:
             agents_used=[r.agent for r in replies if r.success],
             memories_used=memories,
             tool_traces=[{"agent": r.agent, **t} for r in replies for t in r.tool_traces],
-            latency_ms=round((time.monotonic() - t0) * 1000, 1),
+            latency_ms=total_ms,
+            timeline=timeline.summary(),
         )
+
+    @staticmethod
+    async def _timed(name: str, coro):
+        """给 gather 里的并行步骤计时。span 是上下文管理器，包不住一个裸协程，所以绕一下。"""
+        async with tracer.span(name):
+            return await coro
 
     async def _load_memory(self, user_id: str, conv_id: str) -> MemoryContext:
         """记忆读取失败不应该让整个请求失败。读不到就当作新对话处理。"""
