@@ -30,7 +30,9 @@ from app.evals.metrics import classification_report, confusion_pairs  # noqa: E4
 from app.intent.llm_classifier import FEW_SHOTS, llm_vote  # noqa: E402
 from app.intent.recognizer import fuse  # noqa: E402
 from app.intent.rules import rule_vote  # noqa: E402
-from app.intent.schema import Intent  # noqa: E402
+from app.intent.rules import detect_urgency, extract_entities  # noqa: E402
+from app.intent.schema import INTENT_GROUP, Intent, IntentResult  # noqa: E402
+from app.routing.router import decide  # noqa: E402
 from app.llm import LLMClient  # noqa: E402
 
 CASES_PATH = ROOT / "evals" / "intent_cases.jsonl"
@@ -90,6 +92,19 @@ def check_dataset(cases: list[dict]) -> None:
     print()
 
 
+def expected_primary(intent: Intent) -> str:
+    """真实标签对应的主 Agent。other 应当反问，用 clarify 表示；转人工用 escalation。"""
+    group = INTENT_GROUP[intent].value
+    return {"none": "clarify", "escalation": "escalation"}.get(group, group)
+
+
+def routed_primary(text: str, intent: Intent, conf: float) -> str:
+    """把识别结果送进真实的路由函数，看主 Agent 选了谁。路由还看关键词和实体，所以不等于意图组映射。"""
+    result = IntentResult(intent, INTENT_GROUP[intent], conf, "eval", detect_urgency(text, intent), extract_entities(text))
+    d = decide(result, text)
+    return "clarify" if d.action == "clarify" else d.primary
+
+
 async def main(split: str, with_notes: bool = True) -> None:
     cases = load_cases()
     if not with_notes:
@@ -114,6 +129,8 @@ async def main(split: str, with_notes: bool = True) -> None:
             "pred_llm": fuse(llm_v, None)[0].value,
             "pred_rule": fuse(None, rule_v)[0].value,
             "llm_failed": llm_v is None, "latency_ms": round(ms),
+            "pred_primary": routed_primary(case["text"], fused, conf),
+            "gold_primary": expected_primary(Intent(case["intent"])),
         }
 
     t0 = time.monotonic()
@@ -149,6 +166,8 @@ async def main(split: str, with_notes: bool = True) -> None:
     sources = Counter(r["source"] for r in rows)
     latencies = sorted(r["latency_ms"] for r in rows)
     failed = sum(r["llm_failed"] for r in rows)
+    routing_ok = sum(r["pred_primary"] == r["gold_primary"] for r in rows)
+    print(f"\n路由准确率（主 Agent 选对）: {routing_ok}/{len(rows)} = {routing_ok / len(rows):.1%}")
     print(f"\n结论来源: {dict(sources)}   LLM 调用失败: {failed}")
     print(f"单次 LLM 延迟: 中位数 {latencies[len(latencies) // 2]}ms，最大 {latencies[-1]}ms；总耗时 {wall:.0f}s")
 
@@ -162,7 +181,7 @@ async def main(split: str, with_notes: bool = True) -> None:
         "model": settings.llm_model, "n_cases": len(rows),
         "per_class_counts": dict(Counter(y_true)),
         "reports": reports, "confusions": pairs, "sources": dict(sources), "llm_failures": failed,
-        "with_notes": with_notes,
+        "with_notes": with_notes, "routing_accuracy": round(routing_ok / len(rows), 4),
         "errors": [r for r in rows if r["pred_fused"] != r["intent"]],
         "rows": rows,   # 全部样本的预测结果，用于事后分析，例如规则和 LLM 不一致时谁更可靠
     }, ensure_ascii=False, indent=2), encoding="utf-8")

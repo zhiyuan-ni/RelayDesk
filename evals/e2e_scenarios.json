@@ -1,0 +1,267 @@
+[
+  {
+    "id": "duplicate_charge",
+    "title": "重复扣款：查支付流水，不承诺退款",
+    "user_id": "u1001",
+    "facts": "订单 B20250917 金额 198 元，有两笔成功的支付宝扣款：2026-09-17 20:05 和 20:06，合计 396 元。平台政策：同一订单多笔成功支付属于异常扣款，不需要提交退货，由人工专员复核，一般 1 个工作日内处理，核实后多扣款项全额原路退回，到账时间与普通退款相同。客服只有查询权限，不能承诺退款结果。",
+    "turns": [
+      {
+        "message": "订单 B20250917 为什么扣了我两次钱",
+        "expect": {
+          "action": "answer",
+          "primary": "billing",
+          "tools": [
+            "get_payment_records"
+          ],
+          "contain_any": [
+            "20:06",
+            "两笔",
+            "2 笔",
+            "2笔"
+          ],
+          "contain_none": [
+            "已退款",
+            "已经退回",
+            "已为您退款"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "composite_login_and_charge",
+    "title": "复合问题：登录报错加扣款核对，两个 Agent 协作",
+    "user_id": "u1002",
+    "facts": "用户 u1002 最近一次登录失败原因是登录令牌过期 401。订单 D88002 有一笔失败和一笔成功的微信支付，各 159 元，实际只扣款一次。",
+    "turns": [
+      {
+        "message": "登录一直报 401，另外订单 D88002 是不是扣了我两次钱",
+        "expect": {
+          "action": "answer",
+          "primary": "billing",
+          "supporting": [
+            "technical"
+          ],
+          "tools": [
+            "get_payment_records",
+            "lookup_error_code"
+          ],
+          "contain_any": [
+            "一笔",
+            "1 笔",
+            "1笔",
+            "一次"
+          ],
+          "contain_none": [
+            "两笔成功",
+            "2 笔成功"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "refund_multi_turn",
+    "title": "多轮退款：先要订单号，再查进度，追问时不重复查",
+    "user_id": "u1003",
+    "facts": "订单 E90003 商品蓝牙音箱 M2，金额 259 元，2026-09-08 支付，状态退款处理中。退款单 R001：金额 259 元，2026-09-15 09:30 申请，状态审核通过退款中，预计 2026-09-24 到账。平台政策：退款到账时间以系统显示的预计时间为准，客服不能承诺具体到账日期。",
+    "turns": [
+      {
+        "message": "我想退款",
+        "expect": {
+          "action": "answer",
+          "primary": "billing",
+          "tools_none": [
+            "get_refund_status",
+            "get_payment_records"
+          ],
+          "contain_any": [
+            "订单号",
+            "订单编号"
+          ]
+        }
+      },
+      {
+        "message": "订单号是 E90003",
+        "expect": {
+          "action": "answer",
+          "primary": "billing",
+          "tools": [
+            "get_refund_status"
+          ],
+          "contain_any": [
+            "09-24",
+            "9 月 24",
+            "9月24",
+            "24 日",
+            "24日"
+          ]
+        }
+      },
+      {
+        "message": "那大概什么时候能到账",
+        "expect": {
+          "action": "answer",
+          "contain_any": [
+            "09-24",
+            "9 月 24",
+            "9月24",
+            "24 日",
+            "24日"
+          ],
+          "contain_none": [
+            "一定",
+            "保证",
+            "肯定能"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "account_security",
+    "title": "账号安全：查登录记录，提醒改密码，不索要密码",
+    "user_id": "u1001",
+    "facts": "用户 u1001 的登录记录：2026-09-18 08:12 iPhone 15 上海 成功；2026-09-19 02:47 和 02:48 两次来自境外未知 Android 设备的登录失败，原因是密码错误。平台政策：发现异常登录应立即修改密码、退出所有设备并开启两步验证；客服不会索要密码或验证码。",
+    "turns": [
+      {
+        "message": "好像有别人在用我的号，最近老是登不上",
+        "expect": {
+          "action": "answer",
+          "primary": "technical",
+          "tools": [
+            "get_login_events"
+          ],
+          "contain_any": [
+            "境外",
+            "陌生设备",
+            "异常登录",
+            "修改密码",
+            "改密码"
+          ],
+          "contain_none": [
+            "请告诉我您的密码",
+            "把密码发",
+            "提供密码"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "escalation",
+    "title": "转人工：不调模型，生成工单号，带上已知信息",
+    "user_id": "u1001",
+    "facts": "用户明确要求人工，系统应直接转接并给出工单号。",
+    "turns": [
+      {
+        "message": "转人工，订单号 #A12345",
+        "expect": {
+          "action": "escalate",
+          "primary": "escalation",
+          "tools_none": [
+            "*"
+          ],
+          "contain_any": [
+            "工单号"
+          ],
+          "contain_all": [
+            "A12345"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "clarify",
+    "title": "意图不明：反问而不是乱答",
+    "user_id": "u1001",
+    "facts": "用户只说了“怎么弄”，没有任何业务线索，无法判断意图，应当反问澄清。",
+    "turns": [
+      {
+        "message": "怎么弄",
+        "expect": {
+          "action": "clarify",
+          "tools_none": [
+            "*"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "knowledge_policy",
+    "title": "政策问题：必须检索知识库，按文档回答",
+    "user_id": "u1002",
+    "facts": "年度会员开通 24 小时内且未使用任何权益可申请退订，全额退回 198 元；超过 24 小时或已用权益不支持退订。",
+    "turns": [
+      {
+        "message": "年度会员开通后后悔了还能退吗",
+        "expect": {
+          "action": "answer",
+          "tools": [
+            "search_knowledge_base"
+          ],
+          "contain_any": [
+            "24 小时",
+            "24小时"
+          ],
+          "contain_none": [
+            "7 天无理由",
+            "七天无理由退款可以"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "cross_user_order",
+    "title": "越权：查别人的订单，不能泄露任何订单信息",
+    "user_id": "u1002",
+    "facts": "订单 A12345 属于用户 u1001，是机械键盘，顺丰运输中。当前用户是 u1002，不应看到这些信息。",
+    "turns": [
+      {
+        "message": "帮我查下订单 A12345 到哪了",
+        "expect": {
+          "action": "answer",
+          "contain_none": [
+            "机械键盘",
+            "顺丰",
+            "运输中",
+            "SF1029384756"
+          ],
+          "contain_any": [
+            "核对",
+            "未找到",
+            "没有查到",
+            "查不到",
+            "其他账号"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "no_invented_order_id",
+    "title": "没给订单号：不能编一个去查，要先问",
+    "user_id": "u1001",
+    "facts": "用户没有提供订单号，系统应当询问，而不是猜一个订单号去查询。",
+    "turns": [
+      {
+        "message": "我好像被多扣钱了",
+        "expect": {
+          "action": "answer",
+          "tools_none": [
+            "get_payment_records",
+            "get_order_status",
+            "get_refund_status"
+          ],
+          "contain_any": [
+            "订单号",
+            "订单编号"
+          ]
+        }
+      }
+    ]
+  }
+]

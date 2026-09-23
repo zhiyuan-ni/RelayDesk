@@ -32,6 +32,7 @@ class Settings:
     kb_breaker_failures: int = 3       # 连续失败 3 次后熔断
     kb_breaker_recovery_s: float = 30.0
     redis_url: str = "redis://localhost:6379/0"
+    judge_model: str = "gpt-4.1-mini"   # 评测用的评委模型，刻意和主模型不同厂商
 
 
 def _optional_bool(name: str) -> Optional[bool]:
@@ -52,6 +53,7 @@ def load_settings() -> Settings:
         embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-v4").strip(),
         kb_path=os.getenv("KB_PATH", "data/chroma").strip(),
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0").strip(),
+        judge_model=os.getenv("JUDGE_MODEL", "gpt-4.1-mini").strip(),
         retrieval_rerank=_optional_bool("RETRIEVAL_RERANK") is not False,    # 未设置时为 True
         retrieval_rewrite=_optional_bool("RETRIEVAL_REWRITE") is True,       # 未设置时为 False
     )
