@@ -42,6 +42,10 @@ class Settings:
     rerank_backend: str = "llm"   # 知识库重排由谁做，取值同上
     jev_model: str = "jev-1.13"
     jev_timeout_s: float = 10.0
+    # 连接闲置多久后由客户端关闭。httpx 默认 5 秒，比用户两次发消息的间隔还短，
+    # 于是几乎每轮都要重新建连接，经代理的冷连接要 6 到 10 秒。实测中转站那一侧闲置 60 秒的连接仍可复用，
+    # 120 秒时已被对端关闭。对端先关也不会报错，httpx 会发现并换一条新连接，只是又变回冷连接的耗时
+    http_keepalive_s: float = 60.0
 
 
 def _optional_bool(name: str) -> Optional[bool]:

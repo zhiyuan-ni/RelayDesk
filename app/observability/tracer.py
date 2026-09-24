@@ -3,7 +3,11 @@
 一个请求进来时开一条时间线，链路上每一步用 span 包住：
     async with trace.span("intent"):
         ...
-结束时时间线上就有每一步的名字、开始时刻和耗时。并行的步骤会有重叠的时间段，
+结束时时间线上就有每一步的名字、开始时刻和耗时。
+需要记录结果时用 as 拿到这一步的附加信息字典：
+    async with trace.span("memory_recall") as meta:
+        meta["status"] = "timeout"
+并行的步骤会有重叠的时间段，
 所以时间线记的是每一步各自的耗时，而不是简单相加。
 
 时间线用 contextvars 传递，不用一层层往函数里传参数。
@@ -35,7 +39,7 @@ class Timeline:
     async def span(self, name: str, **meta: Any):
         start = time.monotonic()
         try:
-            yield
+            yield meta   # 调用方可以在执行过程中往里补充结果，例如 meta["status"] = "timeout"
         finally:   # 出异常也要记录，否则失败的那一步恰好从时间线上消失
             self.spans.append(Span(name, round((start - self._t0) * 1000, 1),
                                    round((time.monotonic() - start) * 1000, 1), meta))
@@ -65,7 +69,7 @@ async def span(name: str, **meta: Any):
     """在任何地方给一段代码计时。当前没有时间线时什么都不做，所以库代码可以放心加。"""
     tl = _current.get()
     if tl is None:
-        yield
+        yield meta   # 没有时间线时照样给一个字典，调用方不用判断
         return
-    async with tl.span(name, **meta):
-        yield
+    async with tl.span(name, **meta) as m:
+        yield m

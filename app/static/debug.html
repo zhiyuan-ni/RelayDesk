@@ -73,7 +73,7 @@ main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; height: cal
 .small { font-size: 12px; }
 
 /* 瀑布图 */
-.wf { display: grid; grid-template-columns: 170px 1fr 64px; gap: 3px 8px; align-items: center; font-size: 12px; }
+.wf { display: grid; grid-template-columns: 220px 1fr 64px; gap: 3px 8px; align-items: center; font-size: 12px; }
 .wf .name { font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wf .track { position: relative; height: 14px; background: var(--bg); border-radius: 3px; }
 .wf .bar { position: absolute; top: 0; bottom: 0; border-radius: 3px; min-width: 2px; }
@@ -331,9 +331,17 @@ function memoryCard(r) {
       ${st.summary ? `<div class="mem-item"><span class="role">摘要</span>${esc(st.summary)}</div>` : ""}
       ${list || '<div class="muted small" style="margin-top:6px">这是会话的第一轮，没有历史</div>'}`;
   }
-  const longHtml = r.memories_used.length
-    ? r.memories_used.map((m) => `<div class="mem-item">${esc(m)}</div>`).join("")
-    : '<div class="muted small">没有想起相关的以往会话</div>';
+  // 召回结果看时间线上 memory_recall 的 status：超时、出错和"真没有"返回的都是空列表
+  const recall = r.timeline.find((s) => s.name === "memory_recall");
+  const recallNote = {
+    timeout: `<span class="tag bad">超时</span> 召回用了 ${recall ? ms(recall.duration_ms) : "?"}，超过时限，本轮没有用上长期记忆`,
+    error: '<span class="tag bad">出错</span> 召回失败，本轮没有用上长期记忆，详见服务日志',
+    miss: "没有想起相关的以往会话",
+  };
+  let longHtml;
+  if (r.memories_used.length) longHtml = r.memories_used.map((m) => `<div class="mem-item">${esc(m)}</div>`).join("");
+  else if (!recall) longHtml = '<div class="muted small">未启用（长期记忆不可用或请求没带会话号）</div>';
+  else longHtml = `<div class="small ${recall.status === "miss" ? "muted" : ""}">${recallNote[recall.status] || recallNote.miss}</div>`;
   return `<div class="card"><h2>短期记忆（本次会话）</h2>${shortHtml}</div>
     <div class="card"><h2>长期记忆（以往会话）</h2>${longHtml}</div>`;
 }

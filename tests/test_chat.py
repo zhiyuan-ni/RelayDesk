@@ -65,3 +65,14 @@ def test_metrics_include_each_stage():
     stages = client.get("/metrics").json()["stage"]
     assert {"request", "intent"} <= set(stages)
     assert not any(name.startswith(("agent:", "tool:")) for name in stages)   # 这两类单独统计
+
+
+def test_clients_keep_idle_connections_alive():
+    # httpx 默认闲置 5 秒就断开，经代理重新握手要 6 秒以上。这里防止连接池参数被无意中改回默认值
+    from app.config import Settings
+    from app.jev import JevClient
+    from app.llm import LLMClient
+    cfg = Settings("k", "https://example.com/v1", "qwen3.8-flash")
+    llm_pool = LLMClient(cfg).client._client._transport._pool
+    jev_pool = JevClient(cfg)._http._transport._pool
+    assert llm_pool._keepalive_expiry == jev_pool._keepalive_expiry == cfg.http_keepalive_s == 60.0

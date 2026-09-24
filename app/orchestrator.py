@@ -106,7 +106,7 @@ class Orchestrator:
         # 意图识别带上最近两轮。"订单号是 A12345"这种话，脱离上文无法判断用户想干什么
         intent, memories = await asyncio.gather(
             self._timed("intent", self._recognizer.recognize(message, history[-INTENT_HISTORY:] or None)),
-            self._timed("memory_recall", self._recall(user_id, conv_id, message)),
+            self._recall(user_id, conv_id, message),   # 计时和结果记录在 MemoryManager.recall 里
         )
         decision = decide(intent, message)
         # 只收集用户说过的话，不含助手的回复。否则模型上一轮编出来的订单号，下一轮就变成"出现过"了
