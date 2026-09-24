@@ -18,8 +18,12 @@ def build_knowledge_tool(retriever) -> ToolSpec:
         result = await retriever.retrieve(str(args["query"]), top_k=4)
         if not result.hits:
             return {"found": False, "message": "知识库中没有找到相关内容，请如实告知用户，不要编造政策"}
-        # 只把片段内容交给模型。改写出的查询、候选数量这些调试信息对回答没有帮助，只会浪费 token
-        return {"found": True, "results": result.hits}
+        # 只把片段内容交给模型。改写出的查询、候选数量这些调试信息对回答没有帮助，只会浪费 token，
+        # 所以放进 _debug：execute_tool_call 会把它摘到 trace 上，调试面板看得到，模型看不到
+        return {"found": True, "results": result.hits,
+                "_debug": {"queries": result.queries, "n_candidates": result.n_candidates,
+                           "reranked": result.reranked, "vector_ranks": result.vector_ranks,
+                           "retrieve_ms": result.latency_ms}}
 
     return ToolSpec(
         name=TOOL_NAME,

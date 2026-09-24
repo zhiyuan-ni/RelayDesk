@@ -39,7 +39,9 @@ curl -s localhost:8000/chat -H 'Content-Type: application/json' \
   -d '{"message": "订单 B20250917 为什么扣了我两次钱", "user_id": "u1001"}'
 ```
 
-返回里除了回复，还有意图、路由分数与理由、实际参与的 Agent、每次工具调用的参数与结果、想起的长期记忆，以及各环节耗时。
+返回里除了回复，还有意图、路由分数与理由、实际参与的 Agent、每次工具调用的参数与结果（知识库检索另附重排前后的名次）、本轮带上的短期记忆和想起的长期记忆，以及各环节耗时。
+
+浏览器打开 `http://localhost:8000/debug` 是调试面板：左边对话，右边是所选那一轮的耗时瀑布图、路由打分、工具调用、知识库命中片段和记忆，另有一页运行统计。它是一个不依赖前端框架的静态页面，数据全部来自 `/chat` 和 `/metrics`。
 
 ## 接口
 
@@ -47,6 +49,7 @@ curl -s localhost:8000/chat -H 'Content-Type: application/json' \
 |---|---|
 | `POST /chat` | 主入口 |
 | `POST /search` | 知识库检索，`enhanced=false` 可对比纯向量检索 |
+| `GET /debug` | 调试面板 |
 | `GET /metrics` | 各环节、各 Agent、各工具最近 500 次的调用量、成功率、P50/P95/P99 延迟 |
 | `GET /health` | 健康检查 |
 
@@ -97,9 +100,10 @@ app/
   observability/  请求时间线、统计
   evals/          分类指标、端到端检查、模型评委
   business/       模拟业务数据与查询
+  static/         调试面板页面
 evals/            评测集、标注指南、场景、报告
 scripts/          评测与对比脚本、候选样本抽取
-tests/            178 个单元测试，不联网、不依赖 Redis
+tests/            210 个单元测试，不联网、不依赖 Redis
 ```
 
 ## 已知局限

@@ -44,6 +44,7 @@ class RetrievalResult:
     n_candidates: int = 0                              # 合并去重后的候选数
     reranked: bool = False                             # 重排是否成功。False 表示用的是向量顺序
     latency_ms: float = 0.0
+    vector_ranks: list[int] = field(default_factory=list)   # hits 里每一条在向量排序中的名次，从 0 起。和下标不同说明重排改了顺序
 
 
 def merge_hits(hit_lists: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
@@ -129,8 +130,10 @@ class Retriever:
         if self._rerank_on and len(candidates) > 1:
             hits, reranked = await self._rerank(query, candidates, top_k)
 
+        # merge_hits 已按 (标题, 小节, 正文) 去重，所以用内容相等来找名次不会找错
+        vector_ranks = [candidates.index(h) for h in hits]
         return RetrievalResult(hits, [query] + variants, len(candidates), reranked,
-                               round((time.monotonic() - t0) * 1000, 1))
+                               round((time.monotonic() - t0) * 1000, 1), vector_ranks)
 
     async def _recall(self, queries: list[str]) -> tuple[list[list[dict]], list[str]]:
         if not queries:

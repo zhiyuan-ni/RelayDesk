@@ -4,7 +4,7 @@ from app.agents.tools import ToolContext, ToolSpec, pick_tools
 
 CTX = ToolContext(user_id="u1001")
 TOOLS = pick_tools(("get_order_status", "get_login_events"))
-KEYS = {"tool", "args", "success", "data", "error", "latency_ms"}
+KEYS = {"tool", "args", "success", "data", "error", "latency_ms", "debug"}
 
 
 async def test_1_tool_not_in_whitelist():
@@ -57,3 +57,13 @@ async def test_2_json_but_not_an_object():
     for raw in ("123", "[1, 2]", '"A12345"'):
         t = await execute_tool_call(TOOLS, "get_order_status", raw, CTX)
         assert t["success"] is False and "JSON" in t["error"] and t["args"] == {}
+
+
+async def test_debug_info_is_moved_off_the_payload():
+    # _debug 只给调试面板看。留在 data 里的话，会作为工具结果发给模型，白白占用 token
+    returned = {"ok": True, "_debug": {"n": 3}}
+    tools = {"dbg": ToolSpec("dbg", "带调试信息", {"type": "object", "properties": {}, "required": []},
+                             lambda ctx, args: returned)}
+    t = await execute_tool_call(tools, "dbg", "{}", CTX)
+    assert t["data"] == {"ok": True} and t["debug"] == {"n": 3}
+    assert "_debug" in returned   # 工具自己的对象不被改动

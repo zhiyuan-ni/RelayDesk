@@ -26,6 +26,7 @@ SUMMARY_MAX_CHARS = 400
 class MemoryContext:
     summary: str = ""
     recent: list[dict[str, Any]] = field(default_factory=list)   # 按时间顺序，形如 {"role": ..., "content": ...}
+    total: int = 0   # 按预算挑选之前 Redis 里有多少条消息。和 len(recent) 的差就是这一轮没带上的条数
 
     def history(self) -> list[dict[str, str]]:
         """转成聊天接口需要的格式，去掉时间戳等多余字段。"""
@@ -80,7 +81,8 @@ class MemoryManager:
             self._store.messages(user_id, conv_id),
             self._store.get_summary(user_id, conv_id),
         )
-        return MemoryContext(summary=summary, recent=select_within_budget(messages, CONTEXT_BUDGET))
+        return MemoryContext(summary=summary, recent=select_within_budget(messages, CONTEXT_BUDGET),
+                             total=len(messages))
 
     async def save_turn(self, user_id: str, conv_id: str, user_msg: str, assistant_msg: str) -> None:
         await self._store.append(user_id, conv_id, "user", user_msg)

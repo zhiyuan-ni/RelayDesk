@@ -73,6 +73,7 @@ async def test_vector_only_mode():
     r = await Retriever(kb, None, rewrite=False, rerank=False).retrieve(Q, top_k=2)
     assert kb.queries == [Q] and r.queries == [Q] and not r.reranked
     assert [h["section"] for h in r.hits] == ["短信验证码", "两步验证"]      # 向量顺序，正确答案排第二
+    assert r.vector_ranks == [0, 1]
 
 
 async def test_rewrite_adds_recall_and_rerank_fixes_order():
@@ -88,6 +89,7 @@ async def test_rerank_can_override_vector_order():
     llm = FakeLLM(order=[1, 0])
     r = await Retriever(FakeKB(), llm, rewrite=False).retrieve(Q, top_k=2)
     assert [h["section"] for h in r.hits] == ["两步验证", "短信验证码"] and r.reranked
+    assert r.vector_ranks == [1, 0]   # 重排把向量第二名提到了第一
 
 
 async def test_rewrite_failure_degrades_to_original_query():

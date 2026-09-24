@@ -120,3 +120,19 @@ async def test_order_id_recalled_from_memory_passes_the_grounding_check(tmp_path
     orch._agents["billing"] = SpyAgent()
     await orch.handle("上次那个重复扣款的订单后来怎么样了", "u1001", "friday")
     assert "B20250917" in captured["text"]
+
+
+async def test_short_term_view_shows_what_was_sent():
+    orch, _, _ = make()
+    first = await orch.handle("我想退款", "u1001", "c9")
+    assert first.short_term["enabled"] and first.short_term["messages_total"] == 0
+    second = await orch.handle("订单号是 A12345", "u1001", "c9")
+    st = second.short_term
+    assert st["messages_total"] == 2 and st["intent_window"] == 2
+    assert [m["content"] for m in st["messages_used"]] == ["我想退款", "billing 的回答"]
+
+
+async def test_short_term_view_without_conv_id():
+    orch, _, _ = make()
+    r = await orch.handle("我想退款", "u1001", "")
+    assert r.short_term["enabled"] is False and r.short_term["messages_used"] == []

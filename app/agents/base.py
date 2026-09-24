@@ -54,13 +54,14 @@ async def execute_tool_call(
 ) -> dict[str, Any]:
     """执行模型要求的一次工具调用，返回一条 trace 字典，永远不向外抛异常。
 
-    返回的字典含 tool、args、success、data、error、latency_ms 六个键。
+    返回的字典含 tool、args、success、data、error、latency_ms、debug 七个键。
+    工具返回的字典里如果有 _debug 键，会被移到 debug 上：它只给调试面板看，不会作为工具结果发给模型。
     以下情况都视为失败并写明原因，交给模型自行处理：工具不在白名单、参数不是合法的 JSON 对象、
     缺少必填参数、工具函数抛出异常。工具函数可以是同步或异步的。
     """
     t0 = time.monotonic()
     trace = {"tool": name, "args": {}, "success": False,
-             "data": None, "error": "", "latency_ms": 0.0}
+             "data": None, "error": "", "latency_ms": 0.0, "debug": None}
 
     def done():
         trace["latency_ms"] = round((time.monotonic() - t0) * 1000, 1)
@@ -97,7 +98,10 @@ async def execute_tool_call(
     except Exception as ex:
         trace["error"] = str(ex)
         return done()
-    
+
+    if isinstance(result, dict) and "_debug" in result:
+        result = dict(result)   # 复制一份再删，不改动工具函数自己持有的对象
+        trace["debug"] = result.pop("_debug")
     trace["data"] = result
     trace["success"] = True
     return done()

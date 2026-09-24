@@ -46,3 +46,22 @@ def test_for_model_shares_client_and_drops_thinking_flag_for_other_vendors():
     assert same is base
     assert qwen.client is base.client and qwen.model == "qwen-turbo" and qwen._enable_thinking is False
     assert other.client is base.client and other._enable_thinking is None
+
+
+def test_chat_exposes_debug_fields():
+    body = make_client(FakeLLM("refund")).post("/chat", json={"message": "我要退款"}).json()
+    assert body["short_term"]["enabled"] is False   # 测试里的编排器没有接记忆
+    assert body["timeline"] and {"name", "start_ms", "duration_ms"} <= set(body["timeline"][0])
+
+
+def test_debug_page_is_served():
+    res = make_client(FakeLLM()).get("/debug")
+    assert res.status_code == 200 and "RelayDesk 调试面板" in res.text
+
+
+def test_metrics_include_each_stage():
+    client = make_client(FakeLLM("refund"))
+    client.post("/chat", json={"message": "我要退款"})
+    stages = client.get("/metrics").json()["stage"]
+    assert {"request", "intent"} <= set(stages)
+    assert not any(name.startswith(("agent:", "tool:")) for name in stages)   # 这两类单独统计
