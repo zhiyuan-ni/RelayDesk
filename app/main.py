@@ -3,9 +3,11 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any, Optional
 import uuid
+from pathlib import Path
 
 import redis.asyncio as redis
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.config import settings
@@ -139,7 +141,8 @@ class ChatResponse(BaseModel):
     # 工具
     tool_traces: list[dict[str, Any]]
     # 记忆
-    memories_used: list[str]
+    memories_used: list[str]         # 长期记忆：从以往会话里想起的内容
+    short_term: dict[str, Any]       # 短期记忆：本次会话里带给模型的摘要和最近几条消息
     # 各环节耗时
     timeline: list[dict[str, Any]]
 
@@ -147,6 +150,12 @@ class ChatResponse(BaseModel):
 @app.get("/health")
 async def health():
     return {"status": "ok", "model": settings.llm_model}
+
+
+@app.get("/debug", include_in_schema=False)
+async def debug_page():
+    """开发者调试面板：对话，加上每一轮的意图、路由、工具调用、记忆和各环节耗时。数据全部来自 /chat 和 /metrics。"""
+    return FileResponse(Path(__file__).parent / "static" / "debug.html")
 
 
 @app.get("/metrics")
@@ -166,7 +175,8 @@ async def search(query: str, top_k: int = 4, enhanced: bool = True, request: Req
         # 502 表示"我依赖的上游服务出错了"，比笼统的 500 更准确，错误原因也一并返回
         raise HTTPException(status_code=502, detail=f"检索失败: {ex}") from ex
     return {"query": query, "mode": "enhanced", "queries": r.queries, "n_candidates": r.n_candidates,
-            "reranked": r.reranked, "latency_ms": r.latency_ms, "results": r.hits}
+            "reranked": r.reranked, "vector_ranks": r.vector_ranks, "latency_ms": r.latency_ms,
+            "results": r.hits}
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -193,5 +203,6 @@ async def chat(req: ChatRequest, orch: Orchestrator = Depends(get_orchestrator))
         routing_reason=decision.reason,
         tool_traces=result.tool_traces,
         memories_used=result.memories_used,
+        short_term=result.short_term,
         timeline=result.timeline,
     )

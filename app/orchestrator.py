@@ -24,6 +24,7 @@ from app.routing.router import RoutingDecision, decide
 
 logger = logging.getLogger(__name__)
 
+INTENT_HISTORY = 4   # 意图识别带上最近几条消息，即两轮
 CLARIFY_TEXT = "我还不太确定您想处理哪类问题。方便说一下是订单物流、退换货或退款、扣款、发票，还是登录和报错方面的问题吗？"
 
 
@@ -44,6 +45,7 @@ class OrchestratorResult:
     agents_used: list[str] = field(default_factory=list)   # 实际产出了有效回复的 Agent
     tool_traces: list[dict[str, Any]] = field(default_factory=list)
     memories_used: list[str] = field(default_factory=list)   # 本次从长期记忆里想起的内容
+    short_term: dict[str, Any] = field(default_factory=dict)  # 本次带给模型的会话上下文，见 _short_term_view
     latency_ms: float = 0.0
     timeline: list[dict[str, Any]] = field(default_factory=list)   # 各环节耗时，见 observability/tracer.py
 
@@ -103,7 +105,7 @@ class Orchestrator:
         # 意图识别和长期记忆检索互不依赖，同时进行。前者约 1.5 秒，后者约 1 秒，并行后不增加总耗时。
         # 意图识别带上最近两轮。"订单号是 A12345"这种话，脱离上文无法判断用户想干什么
         intent, memories = await asyncio.gather(
-            self._timed("intent", self._recognizer.recognize(message, history[-4:] or None)),
+            self._timed("intent", self._recognizer.recognize(message, history[-INTENT_HISTORY:] or None)),
             self._timed("memory_recall", self._recall(user_id, conv_id, message)),
         )
         decision = decide(intent, message)
@@ -134,6 +136,11 @@ class Orchestrator:
 
         total_ms = round((time.monotonic() - t0) * 1000, 1)
         stats.record("stage", "request", total_ms)
+        # 时间线上的各环节也进统计，/metrics 才能看到每一步的分位数。
+        # agent 和 tool 已经在执行处记过，而且带着成功与否，这里跳过免得重复
+        for s in timeline.spans:
+            if not s.name.startswith(("agent:", "tool:")):
+                stats.record("stage", s.name, s.duration_ms)
         logger.info("[%s] 完成 %.0fms action=%s primary=%s tools=%s",
                     request_id, total_ms, decision.action, decision.primary,
                     [t["tool"] for r in replies for t in r.tool_traces])
@@ -145,10 +152,21 @@ class Orchestrator:
             decision=decision,
             agents_used=[r.agent for r in replies if r.success],
             memories_used=memories,
+            short_term=self._short_term_view(mem, conv_id),
             tool_traces=[{"agent": r.agent, **t} for r in replies for t in r.tool_traces],
             latency_ms=total_ms,
             timeline=timeline.summary(),
         )
+
+    def _short_term_view(self, mem: MemoryContext, conv_id: str) -> dict[str, Any]:
+        """短期记忆的使用情况，给调试面板看：摘要、Redis 里有几条、实际带上了哪几条。"""
+        return {
+            "enabled": self._memory is not None and bool(conv_id),
+            "summary": mem.summary,
+            "messages_total": mem.total,
+            "messages_used": mem.history(),
+            "intent_window": min(INTENT_HISTORY, len(mem.recent)),   # 其中意图识别看到的条数
+        }
 
     @staticmethod
     async def _timed(name: str, coro):

@@ -51,6 +51,8 @@ async def test_async_tool_runs_through_execute_tool_call(tmp_path):
     tool = build_knowledge_tool(await make_retriever(tmp_path))
     trace = await execute_tool_call({tool.name: tool}, TOOL_NAME, '{"query": "运费多少"}', ToolContext("u1001"))
     assert trace["success"] and trace["data"]["found"] and trace["data"]["results"][0]["title"] == "配送说明"
+    assert "_debug" not in trace["data"]   # 检索过程的调试信息不发给模型
+    assert trace["debug"]["queries"] == ["运费多少"] and trace["debug"]["vector_ranks"][0] == 0
 
 
 async def test_shared_tool_is_added_on_top_of_whitelist(tmp_path):

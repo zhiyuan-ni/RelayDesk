@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RelayDesk 调试面板</title>
+<link rel="icon" href="data:,">
+<!--
+  开发者调试面板：对话 + 每一轮的意图、路由、工具调用、记忆和各环节耗时。
+  纯静态页面，不依赖任何前端框架和构建工具，数据全部来自 /chat 和 /metrics 的返回值。
+-->
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #fff; --line: #e3e6eb; --text: #1d2330; --muted: #6b7385;
+  --accent: #2f6bff; --ok: #16a34a; --bad: #dc2626; --warn: #d97706;
+  --user-bubble: #2f6bff; --user-text: #fff; --bot-bubble: #eef1f5;
+  /* 瀑布图按环节类型着色 */
+  --c-memory: #8b5cf6; --c-intent: #0ea5e9; --c-agent: #f59e0b; --c-llm: #fb923c;
+  --c-tool: #10b981; --c-kb: #14b8a6; --c-compose: #ec4899; --c-other: #94a3b8;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1218; --panel: #171b23; --line: #2a303c; --text: #e5e8ee; --muted: #8b93a5;
+    --accent: #6d9bff; --bot-bubble: #222835; --user-bubble: #3a64d8;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+       font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 16px;
+         background: var(--panel); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 16px; margin: 0 8px 0 0; }
+.grow { flex: 1; }
+.pill { font: 12px var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.pill.ok { color: var(--ok); border-color: currentColor; } .pill.bad { color: var(--bad); border-color: currentColor; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+select { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+.tabs button.active { border-color: var(--accent); color: var(--accent); }
+
+main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; height: calc(100vh - 53px); }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } #chat { height: 70vh; } }
+
+/* 左侧：对话 */
+#chat { display: flex; flex-direction: column; border-right: 1px solid var(--line); min-height: 0; }
+#msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; white-space: pre-wrap; word-break: break-word; }
+.msg.user { align-self: flex-end; background: var(--user-bubble); color: var(--user-text); }
+.msg.bot { align-self: flex-start; background: var(--bot-bubble); cursor: pointer; border: 2px solid transparent; }
+.msg.bot.selected { border-color: var(--accent); }
+.msg.bot .foot { margin-top: 6px; font: 11px var(--mono); color: var(--muted); }
+.msg.pending { color: var(--muted); font-style: italic; }
+.msg.error { background: transparent; border: 1px solid var(--bad); color: var(--bad); }
+#composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--panel); }
+#composer textarea { flex: 1; resize: none; height: 44px; padding: 8px; border: 1px solid var(--line);
+                     border-radius: 8px; background: var(--bg); }
+.samples { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 10px; background: var(--panel); }
+.samples button { font-size: 12px; color: var(--muted); }
+
+/* 右侧：检视 */
+#inspector { overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h2 { font-size: 13px; margin: 0 0 10px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.kv div span { display: block; font-size: 11px; color: var(--muted); }
+.kv div b { font: 600 14px var(--mono); word-break: break-all; }
+.muted { color: var(--muted); } .mono { font-family: var(--mono); }
+.small { font-size: 12px; }
+
+/* 瀑布图 */
+.wf { display: grid; grid-template-columns: 170px 1fr 64px; gap: 3px 8px; align-items: center; font-size: 12px; }
+.wf .name { font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wf .track { position: relative; height: 14px; background: var(--bg); border-radius: 3px; }
+.wf .bar { position: absolute; top: 0; bottom: 0; border-radius: 3px; min-width: 2px; }
+.wf .ms { text-align: right; font-family: var(--mono); color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+
+/* 路由打分 */
+.score { display: grid; grid-template-columns: 90px 1fr 48px; gap: 8px; align-items: center; margin: 4px 0; font-size: 12px; }
+.score .track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.score .fill { height: 100%; background: var(--c-other); }
+.score.primary .fill { background: var(--accent); } .score.support .fill { background: var(--c-agent); }
+
+/* 工具调用 */
+details { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+details > summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "▸"; color: var(--muted); }
+details[open] > summary::before { content: "▾"; }
+details.fail { border-color: var(--bad); }
+pre { font: 12px/1.45 var(--mono); background: var(--bg); padding: 8px; border-radius: 6px; overflow-x: auto;
+      white-space: pre-wrap; word-break: break-all; margin: 8px 0 0; max-height: 320px; }
+.tag { font: 11px var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); }
+.tag.ok { color: var(--ok); } .tag.bad { color: var(--bad); } .tag.warn { color: var(--warn); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.up { color: var(--ok); } .down { color: var(--bad); }
+
+/* 记忆 */
+.mem-item { border-left: 3px solid var(--c-memory); padding: 4px 8px; margin: 6px 0; white-space: pre-wrap; font-size: 12px; }
+.mem-item.dim { border-left-color: var(--line); color: var(--muted); }
+.mem-item .role { font: 11px var(--mono); color: var(--muted); margin-right: 6px; }
+
+#metrics-view { padding: 16px; overflow-y: auto; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RelayDesk 调试面板</h1>
+  <span class="tabs"><button data-view="chat" class="active">对话</button> <button data-view="metrics">运行统计</button></span>
+  <span class="grow"></span>
+  <label class="small muted">用户
+    <select id="user">
+      <option value="u1001">u1001（A12345, B20250917）</option>
+      <option value="u1002">u1002（C77001, D88002）</option>
+      <option value="u1003">u1003（E90003）</option>
+    </select>
+  </label>
+  <span class="pill mono" id="conv" title="当前会话号">会话 —</span>
+  <button id="new-conv">新会话</button>
+  <span class="pill" id="health">检查服务…</span>
+</header>
+
+<main id="chat-view">
+  <section id="chat">
+    <div id="msgs"><div class="empty">发一条消息试试。点击任意一条回复，右侧显示这一轮的处理过程。</div></div>
+    <div class="samples" id="samples"></div>
+    <form id="composer">
+      <textarea id="input" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+      <button class="primary" id="send">发送</button>
+    </form>
+  </section>
+  <section id="inspector"><div class="empty">还没有选中的回复</div></section>
+</main>
+
+<section id="metrics-view" class="hidden"></section>
+
+<script>
+"use strict";
+// ── 状态 ──────────────────────────────────────────────────────────────
+const state = { convId: null, turns: [], selected: -1, busy: false };
+const $ = (sel) => document.querySelector(sel);
+
+const SAMPLES = [
+  "我的订单 A12345 到哪了",
+  "我要退款，订单号 B20250917",
+  "登录一直提示验证码错误，另外我好像被重复扣款了",
+  "退货的运费谁出？",
+  "我要投诉，转人工",
+];
+
+// 所有来自服务端或用户输入的文字都要转义后再放进 innerHTML
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+const ms = (v) => (v >= 1000 ? (v / 1000).toFixed(2) + "s" : Math.round(v) + "ms");
+const json = (v) => esc(JSON.stringify(v, null, 2));
+
+// ── 对话 ──────────────────────────────────────────────────────────────
+function renderMessages() {
+  const box = $("#msgs");
+  if (!state.turns.length) {
+    box.innerHTML = '<div class="empty">发一条消息试试。点击任意一条回复，右侧显示这一轮的处理过程。</div>';
+    return;
+  }
+  box.innerHTML = state.turns.map((t, i) => {
+    const user = `<div class="msg user">${esc(t.message)}</div>`;
+    if (t.pending) return user + '<div class="msg bot pending">处理中…</div>';
+    if (t.error) return user + `<div class="msg error">请求失败：${esc(t.error)}</div>`;
+    const r = t.data;
+    const foot = `${ms(r.latency_ms)} · ${esc(r.intent)} · ${esc(r.agents_used.join("+") || r.action)}`
+      + (r.tool_traces.length ? ` · ${r.tool_traces.length} 次工具` : "");
+    return user + `<div class="msg bot ${i === state.selected ? "selected" : ""}" data-i="${i}">${esc(r.response)}<div class="foot">${foot}</div></div>`;
+  }).join("");
+  box.scrollTop = box.scrollHeight;
+}
+
+async function send(text) {
+  text = text.trim();
+  if (!text || state.busy) return;
+  state.busy = true; $("#send").disabled = true;
+  const turn = { message: text, pending: true };
+  state.turns.push(turn); renderMessages();
+  try {
+    const res = await fetch("/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, user_id: $("#user").value, conv_id: state.convId }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+    turn.data = await res.json();
+    state.convId = turn.data.conv_id;
+    $("#conv").textContent = state.convId;
+    state.selected = state.turns.length - 1;
+    renderInspector();
+  } catch (ex) {
+    turn.error = ex.message;
+  } finally {
+    turn.pending = false; state.busy = false; $("#send").disabled = false;
+    renderMessages();
+  }
+}
+
+function resetConversation() {
+  Object.assign(state, { convId: null, turns: [], selected: -1 });
+  $("#conv").textContent = "会话 —";
+  renderMessages(); renderInspector();
+}
+
+// ── 检视：一轮请求的全部细节 ──────────────────────────────────────────
+function renderInspector() {
+  const box = $("#inspector");
+  const turn = state.turns[state.selected];
+  if (!turn || !turn.data) { box.innerHTML = '<div class="empty">还没有选中的回复</div>'; return; }
+  const r = turn.data;
+  box.innerHTML = [overviewCard(r), waterfallCard(r), routingCard(r), toolsCard(r), memoryCard(r),
+    `<div class="card"><details><summary>原始返回 JSON</summary><pre>${json(r)}</pre></details></div>`].join("");
+}
+
+function overviewCard(r) {
+  const conf = (r.intent_confidence * 100).toFixed(0) + "%";
+  const cells = [
+    ["总耗时", ms(r.latency_ms)], ["request_id", r.request_id], ["动作", r.action],
+    ["意图", `${r.intent} (${r.intent_group})`], ["置信度 / 来源", `${conf} / ${r.intent_source}`], ["紧急度", r.urgency],
+    ["实际作答", r.agents_used.join(", ") || "—"],
+  ];
+  const ents = Object.entries(r.entities || {}).filter(([, v]) => v && v.length);
+  if (ents.length) cells.push(["抽取实体", ents.map(([k, v]) => `${k}=${v.join("/")}`).join(" ")]);
+  return `<div class="card"><h2>概览</h2><div class="kv">${cells.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div></div>`;
+}
+
+// 环节的层级和颜色。层级只用于缩进，让 llm/tool 看起来挂在 agent 下面
+function spanKind(name) {
+  if (name.startsWith("memory")) return ["memory", 0];
+  if (name === "intent") return ["intent", 0];
+  if (name.startsWith("agent:")) return ["agent", 0];
+  if (name === "compose") return ["compose", 0];
+  if (name.startsWith("llm:")) return ["llm", 1];
+  if (name.startsWith("tool:")) return ["tool", 1];
+  if (name.startsWith("kb:")) return ["kb", 2];
+  return ["other", 0];
+}
+
+function waterfallCard(r) {
+  const spans = [...r.timeline].sort((a, b) => a.start_ms - b.start_ms || b.duration_ms - a.duration_ms);
+  const total = Math.max(r.latency_ms, ...spans.map((s) => s.start_ms + s.duration_ms), 1);
+  const rows = spans.map((s) => {
+    const [kind, depth] = spanKind(s.name);
+    const extra = Object.entries(s).filter(([k]) => !["name", "start_ms", "duration_ms"].includes(k))
+      .map(([k, v]) => `${k}=${v}`).join(" ");
+    const label = "  ".repeat(depth) + s.name + (extra ? ` · ${extra}` : "");
+    const left = (s.start_ms / total) * 100, width = (s.duration_ms / total) * 100;
+    const tip = `${s.name}  开始 ${ms(s.start_ms)}  耗时 ${ms(s.duration_ms)}${extra ? "  " + extra : ""}`;
+    return `<div class="name" title="${esc(tip)}">${esc(label)}</div>
+      <div class="track" title="${esc(tip)}"><div class="bar" style="left:${left}%;width:${width}%;background:var(--c-${kind})"></div></div>
+      <div class="ms">${ms(s.duration_ms)}</div>`;
+  }).join("");
+  const legend = [["memory", "记忆"], ["intent", "意图"], ["agent", "Agent"], ["llm", "模型调用"], ["tool", "工具"], ["kb", "检索"], ["compose", "合并"]]
+    .map(([k, t]) => `<span><i style="background:var(--c-${k})"></i>${t}</span>`).join("");
+  return `<div class="card"><h2>耗时瀑布图 <span class="muted small">横轴 0 – ${ms(total)}，重叠的条表示并行执行</span></h2>
+    <div class="wf">${rows || '<div class="muted">没有记录到环节</div>'}</div><div class="legend">${legend}</div></div>`;
+}
+
+function routingCard(r) {
+  const entries = Object.entries(r.routing_scores || {}).sort((a, b) => b[1] - a[1]);
+  const bars = entries.map(([name, v]) => {
+    const cls = name === r.primary_agent ? "primary" : r.supporting_agents.includes(name) ? "support" : "";
+    const role = cls === "primary" ? " 主" : cls === "support" ? " 辅" : "";
+    return `<div class="score ${cls}"><span class="mono">${esc(name)}${role}</span>
+      <div class="track"><div class="fill" style="width:${Math.min(v, 1) * 100}%"></div></div><span class="mono">${v.toFixed(2)}</span></div>`;
+  }).join("");
+  return `<div class="card"><h2>路由</h2>${bars || '<div class="muted small">本轮没有打分（反问或升级）</div>'}
+    <div class="small muted" style="margin-top:8px">${esc(r.routing_reason)}</div></div>`;
+}
+
+function toolsCard(r) {
+  if (!r.tool_traces.length) return '<div class="card"><h2>工具调用</h2><div class="muted small">本轮没有调用工具</div></div>';
+  const items = r.tool_traces.map((t) => {
+    const status = t.success ? '<span class="tag ok">成功</span>' : '<span class="tag bad">失败</span>';
+    const refused = t.success && t.data && t.data.found === false ? '<span class="tag warn">未找到 / 被拒绝</span>' : "";
+    const body = t.tool === "search_knowledge_base" && t.success && t.data.found ? kbDetail(t) : `<pre>${json(t.success ? t.data : t.error)}</pre>`;
+    return `<details class="${t.success ? "" : "fail"}"><summary>
+        <span class="tag">${esc(t.agent)}</span><b class="mono">${esc(t.tool)}</b>
+        <span class="mono small muted">${esc(JSON.stringify(t.args))}</span>${status}${refused}
+        <span class="grow"></span><span class="mono small muted">${ms(t.latency_ms)}</span></summary>${body}</details>`;
+  }).join("");
+  return `<div class="card"><h2>工具调用（${r.tool_traces.length}）</h2>${items}</div>`;
+}
+
+// 知识库检索：列出命中的片段，并对比重排前后的名次
+function kbDetail(t) {
+  const d = t.debug || {};
+  const ranks = d.vector_ranks || [];
+  const rows = t.data.results.map((h, i) => {
+    const vr = ranks[i];
+    let move = "";
+    if (vr !== undefined && vr !== i) move = vr > i ? `<span class="up">↑${vr - i}</span>` : `<span class="down">↓${i - vr}</span>`;
+    return `<tr><td class="num">${i + 1}</td><td class="num">${vr === undefined ? "—" : vr + 1} ${move}</td>
+      <td><b>${esc(h.title)}</b> / ${esc(h.section)}<div class="muted">${esc(h.text.slice(0, 160))}${h.text.length > 160 ? "…" : ""}</div></td>
+      <td class="num">${h.score.toFixed(3)}</td></tr>`;
+  }).join("");
+  const meta = [
+    d.queries ? `查询 ${d.queries.length} 条：${d.queries.map(esc).join(" ｜ ")}` : "",
+    d.n_candidates !== undefined ? `候选 ${d.n_candidates} 个` : "",
+    d.reranked === undefined ? "" : d.reranked ? "已重排" : "未重排（向量顺序）",
+    d.retrieve_ms !== undefined ? `检索 ${ms(d.retrieve_ms)}` : "",
+  ].filter(Boolean).join(" · ");
+  return `<div class="small muted" style="margin-top:8px">${meta}</div>
+    <table><tr><th class="num">最终</th><th class="num">向量名次</th><th>片段</th><th class="num">相似度</th></tr>${rows}</table>`;
+}
+
+function memoryCard(r) {
+  const st = r.short_term || {};
+  let shortHtml;
+  if (!st.enabled) {
+    shortHtml = '<div class="muted small">未启用（Redis 不可用或请求没带会话号）</div>';
+  } else {
+    const used = st.messages_used || [];
+    const dropped = st.messages_total - used.length;
+    const firstIntent = used.length - st.intent_window;   // 从这一条开始，意图识别也能看到
+    const list = used.map((m, i) => `<div class="mem-item ${i < firstIntent ? "dim" : ""}"><span class="role">${esc(m.role)}${i >= firstIntent ? " · 意图可见" : ""}</span>${esc(m.content)}</div>`).join("");
+    shortHtml = `<div class="small muted">Redis 中 ${st.messages_total} 条，按字符预算带上 ${used.length} 条${dropped > 0 ? `，舍弃较早的 ${dropped} 条` : ""}；意图识别只看最近 ${st.intent_window} 条</div>
+      ${st.summary ? `<div class="mem-item"><span class="role">摘要</span>${esc(st.summary)}</div>` : ""}
+      ${list || '<div class="muted small" style="margin-top:6px">这是会话的第一轮，没有历史</div>'}`;
+  }
+  const longHtml = r.memories_used.length
+    ? r.memories_used.map((m) => `<div class="mem-item">${esc(m)}</div>`).join("")
+    : '<div class="muted small">没有想起相关的以往会话</div>';
+  return `<div class="card"><h2>短期记忆（本次会话）</h2>${shortHtml}</div>
+    <div class="card"><h2>长期记忆（以往会话）</h2>${longHtml}</div>`;
+}
+
+// ── 运行统计 ──────────────────────────────────────────────────────────
+const KIND_TITLES = { stage: "环节", agent: "Agent", tool: "工具" };
+async function renderMetrics() {
+  const box = $("#metrics-view");
+  box.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const data = await (await fetch("/metrics")).json();
+    const sections = Object.entries(data).map(([kind, names]) => {
+      const rows = Object.entries(names).sort((a, b) => b[1].p50_ms - a[1].p50_ms).map(([name, s]) => {
+        const rate = s.success_rate === null ? "—" : (s.success_rate * 100).toFixed(1) + "%";
+        const bad = s.success_rate !== null && s.success_rate < 1 ? ' class="num down"' : ' class="num"';
+        return `<tr><td class="mono">${esc(name)}</td><td class="num">${s.total}</td><td${bad}>${rate}</td>
+          <td class="num">${ms(s.p50_ms)}</td><td class="num">${ms(s.p95_ms)}</td><td class="num">${ms(s.p99_ms)}</td><td class="num">${ms(s.max_ms)}</td></tr>`;
+      }).join("");
+      return `<div class="card"><h2>${esc(KIND_TITLES[kind] || kind)}</h2><table>
+        <tr><th>名称</th><th class="num">次数</th><th class="num">成功率</th><th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">最大</th></tr>${rows}</table></div>`;
+    }).join("");
+    box.innerHTML = `<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+        <button id="refresh-metrics">刷新</button><span class="small muted">进程启动以来的累计次数；延迟分位数只统计最近 500 次</span></div>
+      <div style="display:flex;flex-direction:column;gap:14px">${sections || '<div class="empty">还没有数据，先去对话页发几条消息</div>'}</div>`;
+    $("#refresh-metrics").onclick = renderMetrics;
+  } catch (ex) {
+    box.innerHTML = `<div class="empty">读取 /metrics 失败：${esc(ex.message)}</div>`;
+  }
+}
+
+// ── 事件绑定 ──────────────────────────────────────────────────────────
+$("#composer").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#input").value; $("#input").value = ""; send(v); });
+$("#input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#composer").requestSubmit(); }
+});
+$("#msgs").addEventListener("click", (e) => {
+  const el = e.target.closest(".msg.bot[data-i]");
+  if (!el) return;
+  state.selected = Number(el.dataset.i); renderMessages(); renderInspector();
+});
+$("#new-conv").onclick = resetConversation;
+$("#user").onchange = resetConversation;   // 换用户必须换会话，会话记录按用户隔离
+$("#samples").innerHTML = SAMPLES.map((s) => `<button type="button">${esc(s)}</button>`).join("");
+$("#samples").addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") send(e.target.textContent); });
+document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("active", x === b));
+  const metrics = b.dataset.view === "metrics";
+  $("#chat-view").classList.toggle("hidden", metrics);
+  $("#metrics-view").classList.toggle("hidden", !metrics);
+  if (metrics) renderMetrics();
+}));
+
+fetch("/health").then((r) => r.json()).then((h) => {
+  $("#health").textContent = "服务正常 · " + h.model; $("#health").className = "pill ok";
+}).catch(() => { $("#health").textContent = "服务不可达"; $("#health").className = "pill bad"; });
+</script>
+</body>
+</html>

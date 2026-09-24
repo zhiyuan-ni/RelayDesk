@@ -106,7 +106,7 @@ async def test_compression_summarizes_old_and_keeps_recent(store):
     assert "问题0" in llm.prompts[0] and f"问题{COMPRESS_AT // 2 - 1}" not in llm.prompts[0]   # 最近的不进摘要
 
     ctx = await m.load("u1", "c1")
-    assert ctx.summary == llm.reply and len(ctx.history()) == KEEP_RECENT
+    assert ctx.summary == llm.reply and len(ctx.history()) == KEEP_RECENT and ctx.total == KEEP_RECENT
     assert set(ctx.history()[0]) == {"role", "content"}
 
 
