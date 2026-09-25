@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.memory.store import ConversationStore
+from app.observability import tracer
 
 logger = logging.getLogger(__name__)
 
@@ -107,16 +108,27 @@ class MemoryManager:
             logger.warning("写入长期记忆失败: %r", ex)
 
     async def recall(self, user_id: str, conv_id: str, query: str) -> list[str]:
-        """想起这个用户以往会话里和当前问题相关的内容。限时执行，超时或失败都返回空列表。"""
+        """想起这个用户以往会话里和当前问题相关的内容。限时执行，超时或失败都返回空列表。
+
+        结果记在时间线上：hit 想起了、miss 没有相关记忆、timeout 超时、error 出错。
+        后三种返回的都是空列表，不记下来的话，调试时分不清是真没有还是没查成。
+        """
         if self._longterm is None:
             return []
-        try:
-            hits = await asyncio.wait_for(
-                self._longterm.recall(user_id, query, exclude_conv_id=conv_id), timeout=RECALL_TIMEOUT_S)
+        async with tracer.span("memory_recall") as meta:
+            try:
+                hits = await asyncio.wait_for(
+                    self._longterm.recall(user_id, query, exclude_conv_id=conv_id), timeout=RECALL_TIMEOUT_S)
+            except TimeoutError:
+                meta["status"] = "timeout"
+                logger.warning("检索长期记忆超过 %.0f 秒，按没有相关记忆处理", RECALL_TIMEOUT_S)
+                return []
+            except Exception as ex:
+                meta["status"] = "error"
+                logger.warning("检索长期记忆失败，按没有相关记忆处理: %r", ex)
+                return []
+            meta["status"] = "hit" if hits else "miss"
             return [h["text"] for h in hits]
-        except Exception as ex:
-            logger.warning("检索长期记忆失败，按没有相关记忆处理: %r", ex)
-            return []
 
     async def compress(self, user_id: str, conv_id: str) -> bool:
         """把旧消息压缩进摘要。返回是否真的执行了压缩。任何失败都只记日志，原始消息保持不动。"""

@@ -8,9 +8,15 @@ aihubmix 是 OpenAI 协议兼容的中转站，所以用 openai SDK，只把 bas
 """
 from typing import Any, Optional
 
-from openai import AsyncOpenAI
+import httpx
+from openai import AsyncOpenAI, DefaultAsyncHttpxClient
 
 from app.config import Settings
+
+
+def connection_limits(cfg: Settings) -> httpx.Limits:
+    """对话、向量、jev 客户端共用的连接池参数。只改闲置保持时间，其余沿用 httpx 的默认值。"""
+    return httpx.Limits(max_connections=100, max_keepalive_connections=20, keepalive_expiry=cfg.http_keepalive_s)
 
 
 class LLMClient:
@@ -22,6 +28,8 @@ class LLMClient:
             base_url=cfg.llm_base_url,
             timeout=30.0,   # 单次请求最长等 30 秒
             max_retries=1,  # 网络抖动时 SDK 自动重试 1 次
+            # 用 SDK 提供的默认客户端，只换连接池参数。它和 httpx 一样会读取系统代理和 HTTPS_PROXY
+            http_client=DefaultAsyncHttpxClient(limits=connection_limits(cfg)),
         )
         self.model = cfg.llm_model
         self._enable_thinking = cfg.llm_enable_thinking

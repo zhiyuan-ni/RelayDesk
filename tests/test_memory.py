@@ -121,3 +121,34 @@ async def test_failed_compression_loses_nothing(store):
     m = MemoryManager(store, FakeLLM(error=TimeoutError("模型超时")))
     await fill(m, COMPRESS_AT // 2)
     assert len(await store.messages("u1", "c1")) == COMPRESS_AT and await store.get_summary("u1", "c1") == ""
+
+
+# ── 长期记忆召回的结果记录 ──
+
+class StubLongTerm:
+    def __init__(self, hits=None, delay=0.0, error=None):
+        self.hits, self.delay, self.error = hits or [], delay, error
+
+    async def recall(self, user_id, query, exclude_conv_id=""):
+        import asyncio
+        await asyncio.sleep(self.delay)
+        if self.error:
+            raise self.error
+        return self.hits
+
+
+@pytest.mark.parametrize("longterm, status, expected", [
+    (StubLongTerm(hits=[{"text": "上次问过重复扣款"}]), "hit", ["上次问过重复扣款"]),
+    (StubLongTerm(), "miss", []),
+    (StubLongTerm(delay=1.0), "timeout", []),
+    (StubLongTerm(error=ConnectionError("连不上")), "error", []),
+])
+async def test_recall_outcome_is_recorded_on_the_timeline(store, monkeypatch, longterm, status, expected):
+    # 后三种都返回空列表，只有时间线上的 status 能区分"真没有"和"没查成"
+    from app.memory import manager
+    from app.observability import tracer
+    monkeypatch.setattr(manager, "RECALL_TIMEOUT_S", 0.05)
+    tl = tracer.start_timeline("r")
+    assert await MemoryManager(store, None, longterm).recall("u1", "c1", "扣款") == expected
+    [span] = tl.summary()
+    assert span["name"] == "memory_recall" and span["status"] == status

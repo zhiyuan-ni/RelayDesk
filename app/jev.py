@@ -12,6 +12,7 @@ from typing import Any, Optional
 import httpx
 
 from app.config import Settings
+from app.llm import connection_limits
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class JevClient:
             base_url=cfg.llm_base_url,
             headers={"Authorization": f"Bearer {cfg.llm_api_key}"},
             timeout=cfg.jev_timeout_s,
+            limits=connection_limits(cfg),   # 不设的话闲置 5 秒就断开，下一次意图识别要重新握手
             **extra,
         )
 
