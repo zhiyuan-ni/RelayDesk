@@ -12,11 +12,30 @@ import httpx
 from openai import AsyncOpenAI, DefaultAsyncHttpxClient
 
 from app.config import Settings
+from app.observability import tracer
 
 
 def connection_limits(cfg: Settings) -> httpx.Limits:
     """对话、向量、jev 客户端共用的连接池参数。只改闲置保持时间，其余沿用 httpx 的默认值。"""
     return httpx.Limits(max_connections=100, max_keepalive_connections=20, keepalive_expiry=cfg.http_keepalive_s)
+
+
+def raw_output(choice: Any) -> dict[str, Any]:
+    """模型返回的原样内容，给调试面板看。
+
+    content 是清理之前的文本：模型偶尔在回复末尾编造"[系统提示]"之类的内容，
+    被 BaseAgent._clean_reply 截掉之前是什么样子，只有这里看得到。
+    """
+    message = choice.message
+    out: dict[str, Any] = {"finish_reason": getattr(choice, "finish_reason", None), "content": message.content}
+    if message.tool_calls:
+        # arguments 保留模型给的原始字符串，不解析。参数 JSON 写坏了的时候，要看的就是这个原样
+        out["tool_calls"] = [{"id": c.id, "name": c.function.name, "arguments": c.function.arguments}
+                             for c in message.tool_calls]
+    reasoning = getattr(message, "reasoning_content", None)   # 部分模型开启思考时会返回
+    if reasoning:
+        out["reasoning"] = reasoning
+    return out
 
 
 class LLMClient:
@@ -86,6 +105,12 @@ class LLMClient:
 
         # await 的含义：在等网络返回的这几秒里，把 CPU 让给别的请求
         resp = await self._client.chat.completions.create(**kwargs)
+        # 延迟主要花在输出 token 上，记下用量，调试面板上才能把"慢"和"说得多"对应起来。
+        # 记在包住这次调用的那一步上，例如 llm:billing、compose、intent
+        if resp.usage is not None:
+            tracer.annotate(model=self.model, prompt_tokens=resp.usage.prompt_tokens,
+                            completion_tokens=resp.usage.completion_tokens)
+        tracer.append("raw_output", raw_output(resp.choices[0]))
         return resp.choices[0].message
 
     async def chat_text(self, prompt: str, **kwargs: Any) -> str:

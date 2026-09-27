@@ -17,12 +17,13 @@
   /* 瀑布图按环节类型着色 */
   --c-memory: #8b5cf6; --c-intent: #0ea5e9; --c-agent: #f59e0b; --c-llm: #fb923c;
   --c-tool: #10b981; --c-kb: #14b8a6; --c-compose: #ec4899; --c-other: #94a3b8;
+  --hover: rgba(47, 107, 255, .08);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0f1218; --panel: #171b23; --line: #2a303c; --text: #e5e8ee; --muted: #8b93a5;
-    --accent: #6d9bff; --bot-bubble: #222835; --user-bubble: #3a64d8;
+    --accent: #6d9bff; --bot-bubble: #222835; --user-bubble: #3a64d8; --hover: rgba(109, 155, 255, .12);
   }
 }
 * { box-sizing: border-box; }
@@ -73,8 +74,21 @@ main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; height: cal
 .small { font-size: 12px; }
 
 /* 瀑布图 */
-.wf { display: grid; grid-template-columns: 220px 1fr 64px; gap: 3px 8px; align-items: center; font-size: 12px; }
+.wf { display: flex; flex-direction: column; gap: 1px; font-size: 12px; }
+.wf-row { display: grid; grid-template-columns: 240px 1fr 64px; gap: 8px; align-items: center; padding: 3px 6px;
+          border-radius: 5px; cursor: pointer; border-left: 3px solid transparent; }
+.wf-row:hover { background: var(--hover); }
+.wf-row.selected { background: var(--hover); border-left-color: var(--accent); }
+.wf-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .wf .name { font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wf .name.bad { color: var(--bad); }
+.detail-body h3 { font-size: 12px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+details.raw-output { border-style: dashed; }
+tr.link { cursor: pointer; } tr.link:hover { background: var(--hover); }
+@media (max-width: 600px) {   /* 窄屏：名称和耗时一行，时间条另起一行 */
+  .wf-row { grid-template-columns: 1fr 56px; row-gap: 3px; }
+  .wf-row .track { grid-column: 1 / -1; order: 3; }
+}
 .wf .track { position: relative; height: 14px; background: var(--bg); border-radius: 3px; }
 .wf .bar { position: absolute; top: 0; bottom: 0; border-radius: 3px; min-width: 2px; }
 .wf .ms { text-align: right; font-family: var(--mono); color: var(--muted); }
@@ -147,7 +161,7 @@ td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowra
 <script>
 "use strict";
 // ── 状态 ──────────────────────────────────────────────────────────────
-const state = { convId: null, turns: [], selected: -1, busy: false };
+const state = { convId: null, turns: [], selected: -1, span: null, busy: false };   // span：瀑布图里选中的那一行
 const $ = (sel) => document.querySelector(sel);
 
 const SAMPLES = [
@@ -200,6 +214,7 @@ async function send(text) {
     state.convId = turn.data.conv_id;
     $("#conv").textContent = state.convId;
     state.selected = state.turns.length - 1;
+    state.span = null;
     renderInspector();
   } catch (ex) {
     turn.error = ex.message;
@@ -210,34 +225,47 @@ async function send(text) {
 }
 
 function resetConversation() {
-  Object.assign(state, { convId: null, turns: [], selected: -1 });
+  Object.assign(state, { convId: null, turns: [], selected: -1, span: null });
   $("#conv").textContent = "会话 —";
   renderMessages(); renderInspector();
 }
 
 // ── 检视：一轮请求的全部细节 ──────────────────────────────────────────
+// 右侧只有概览和瀑布图两张卡。点击瀑布图的一行，下方显示这一步的详情：
+// 路由在"意图"里，工具的参数和结果在"tool:…"里，短期记忆在 memory_load 里，长期记忆在 memory_recall 里
+function sortedSpans(r) {
+  // 开始时刻相同时：先结束的排前面（例如耗时 0 的 compose 和紧接着的 memory_save），
+  // 互相重叠的则长的排前面，让 agent 排在它的第一轮模型调用之前
+  const end = (x) => x.start_ms + x.duration_ms;
+  return [...r.timeline].sort((a, b) => a.start_ms - b.start_ms
+    || (end(a) <= b.start_ms ? -1 : end(b) <= a.start_ms ? 1 : b.duration_ms - a.duration_ms));
+}
+
 function renderInspector() {
   const box = $("#inspector");
   const turn = state.turns[state.selected];
   if (!turn || !turn.data) { box.innerHTML = '<div class="empty">还没有选中的回复</div>'; return; }
   const r = turn.data;
-  box.innerHTML = [overviewCard(r), waterfallCard(r), routingCard(r), toolsCard(r), memoryCard(r),
+  const spans = sortedSpans(r);
+  const scroll = box.scrollTop;   // 点击某一行会整体重绘，保持滚动位置不跳
+  box.innerHTML = [overviewCard(r), waterfallCard(r, spans), detailCard(r, spans, spans[state.span]),
     `<div class="card"><details><summary>原始返回 JSON</summary><pre>${json(r)}</pre></details></div>`].join("");
+  box.scrollTop = scroll;
 }
 
 function overviewCard(r) {
   const conf = (r.intent_confidence * 100).toFixed(0) + "%";
   const cells = [
     ["总耗时", ms(r.latency_ms)], ["request_id", r.request_id], ["动作", r.action],
-    ["意图", `${r.intent} (${r.intent_group})`], ["置信度 / 来源", `${conf} / ${r.intent_source}`], ["紧急度", r.urgency],
+    ["意图", `${r.intent} (${r.intent_group})`], ["置信度 / 来源", `${conf} / ${r.intent_source}`],
     ["实际作答", r.agents_used.join(", ") || "—"],
   ];
-  const ents = Object.entries(r.entities || {}).filter(([, v]) => v && v.length);
-  if (ents.length) cells.push(["抽取实体", ents.map(([k, v]) => `${k}=${v.join("/")}`).join(" ")]);
-  return `<div class="card"><h2>概览</h2><div class="kv">${cells.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div></div>`;
+  return `<div class="card"><h2>概览</h2>${kv(cells)}</div>`;
 }
 
-// 环节的层级和颜色。层级只用于缩进，让 llm/tool 看起来挂在 agent 下面
+const kv = (cells) => `<div class="kv">${cells.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`;
+
+// 环节的类型和缩进层级。层级只用于显示，让 llm/tool 看起来挂在 agent 下面
 function spanKind(name) {
   if (name.startsWith("memory")) return ["memory", 0];
   if (name === "intent") return ["intent", 0];
@@ -249,50 +277,179 @@ function spanKind(name) {
   return ["other", 0];
 }
 
-function waterfallCard(r) {
-  const spans = [...r.timeline].sort((a, b) => a.start_ms - b.start_ms || b.duration_ms - a.duration_ms);
+// 行标签只放最有用的一两项，完整信息看详情
+function spanLabel(s) {
+  if (s.name.startsWith("llm:")) {
+    const next = s.requested === "answer" ? "作答" : Array.isArray(s.requested) ? s.requested.join(", ") : "";
+    return `${s.name} · 第${s.round}轮${next ? " → " + next : ""}`;
+  }
+  const hints = ["status", "backend", "candidates", "agents"].filter((k) => s[k] !== undefined).map((k) => `${k}=${s[k]}`);
+  if (s.fallback) hints.unshift("兜底");
+  return s.name + (hints.length ? " · " + hints.join(" ") : "");
+}
+
+function waterfallCard(r, spans) {
   const total = Math.max(r.latency_ms, ...spans.map((s) => s.start_ms + s.duration_ms), 1);
-  const rows = spans.map((s) => {
+  const rows = spans.map((s, i) => {
     const [kind, depth] = spanKind(s.name);
-    const extra = Object.entries(s).filter(([k]) => !["name", "start_ms", "duration_ms"].includes(k))
-      .map(([k, v]) => `${k}=${v}`).join(" ");
-    const label = "  ".repeat(depth) + s.name + (extra ? ` · ${extra}` : "");
     const left = (s.start_ms / total) * 100, width = (s.duration_ms / total) * 100;
-    const tip = `${s.name}  开始 ${ms(s.start_ms)}  耗时 ${ms(s.duration_ms)}${extra ? "  " + extra : ""}`;
-    return `<div class="name" title="${esc(tip)}">${esc(label)}</div>
-      <div class="track" title="${esc(tip)}"><div class="bar" style="left:${left}%;width:${width}%;background:var(--c-${kind})"></div></div>
-      <div class="ms">${ms(s.duration_ms)}</div>`;
+    const bad = s.status === "timeout" || s.status === "error" ? " bad" : "";
+    return `<div class="wf-row${i === state.span ? " selected" : ""}" data-span="${i}" role="button" tabindex="0"
+        title="${esc(`${s.name}  开始 ${ms(s.start_ms)}  耗时 ${ms(s.duration_ms)}`)}">
+      <div class="name${bad}" style="padding-left:${depth * 14}px">${esc(spanLabel(s))}</div>
+      <div class="track"><div class="bar" style="left:${left}%;width:${width}%;background:var(--c-${kind})"></div></div>
+      <div class="ms">${ms(s.duration_ms)}</div></div>`;
   }).join("");
   const legend = [["memory", "记忆"], ["intent", "意图"], ["agent", "Agent"], ["llm", "模型调用"], ["tool", "工具"], ["kb", "检索"], ["compose", "合并"]]
     .map(([k, t]) => `<span><i style="background:var(--c-${k})"></i>${t}</span>`).join("");
-  return `<div class="card"><h2>耗时瀑布图 <span class="muted small">横轴 0 – ${ms(total)}，重叠的条表示并行执行</span></h2>
+  return `<div class="card"><h2>耗时瀑布图 <span class="muted small">横轴 0 – ${ms(total)}，重叠的条表示并行执行；点击一行查看详情</span></h2>
     <div class="wf">${rows || '<div class="muted">没有记录到环节</div>'}</div><div class="legend">${legend}</div></div>`;
 }
 
-function routingCard(r) {
-  const entries = Object.entries(r.routing_scores || {}).sort((a, b) => b[1] - a[1]);
-  const bars = entries.map(([name, v]) => {
+// ── 环节详情 ──
+const STD_KEYS = ["name", "start_ms", "duration_ms", "raw_output"];   // raw_output 单独折叠显示在最下面
+
+function detailCard(r, spans, s) {
+  if (!s) return '<div class="card"><h2>环节详情</h2><div class="muted small">点击上方瀑布图的任意一行，这里显示那一步的详情</div></div>';
+  const share = ((s.duration_ms / Math.max(r.latency_ms, 1)) * 100).toFixed(0);
+  const head = kv([["开始于", ms(s.start_ms)], ["耗时", ms(s.duration_ms)], ["占总耗时", share + "%"]]);
+  const raw = Object.fromEntries(Object.entries(s).filter(([k]) => !STD_KEYS.includes(k)));
+  const [kind] = spanKind(s.name);
+  const body = {
+    memory: s.name === "memory_load" ? shortTermDetail(r) : s.name === "memory_recall" ? longTermDetail(r, s) : memorySaveDetail(),
+    intent: intentDetail(r), agent: agentDetail(r, spans, s), llm: llmDetail(s), tool: toolDetail(r, spans, s),
+    kb: kbSpanDetail(r, spans, s), compose: composeDetail(r, s),
+  }[kind] || "";
+  return `<div class="card"><h2>环节详情 · <span class="mono">${esc(s.name)}</span></h2>${head}
+    <div class="detail-body">${body}</div>
+    ${Object.keys(raw).length ? `<details><summary class="small muted">时间线上的原始字段</summary><pre>${json(raw)}</pre></details>` : ""}
+    ${rawOutputHtml(s.raw_output)}</div>`;
+}
+
+// 模型的原始输出，默认折叠。一步里可能有多次调用，逐次列出
+function rawOutputHtml(outputs) {
+  if (!outputs || !outputs.length) return "";
+  const items = outputs.map((o, i) => {
+    const head = outputs.length > 1 ? `<div class="small muted" style="margin-top:8px">第 ${i + 1} 次调用</div>` : "";
+    if (!o || typeof o !== "object" || !("content" in o)) return head + `<pre>${json(o)}</pre>`;   // jev：原样的 JSON
+    // 对话模型：正文按原样的文字显示（换行保留），工具调用和思考内容另列
+    const parts = [`<div class="small muted" style="margin-top:6px">finish_reason: <span class="mono">${esc(o.finish_reason ?? "—")}</span></div>`];
+    if (o.reasoning) parts.push(`<div class="small muted">思考内容</div><pre>${esc(o.reasoning)}</pre>`);
+    if (o.content) parts.push(`<div class="small muted">content</div><pre>${esc(o.content)}</pre>`);
+    if (o.tool_calls) parts.push(`<div class="small muted">tool_calls</div><pre>${json(o.tool_calls)}</pre>`);
+    if (!o.content && !o.tool_calls) parts.push('<div class="small muted">（空输出）</div>');
+    return head + parts.join("");
+  }).join("");
+  return `<details class="raw-output"><summary class="small">模型原始输出${outputs.length > 1 ? `（${outputs.length} 次调用）` : ""}</summary>${items}</details>`;
+}
+
+const section = (title, html) => `<h3>${esc(title)}</h3>${html}`;
+
+function shortTermDetail(r) {
+  const st = r.short_term || {};
+  if (!st.enabled) return section("短期记忆", '<div class="muted small">未启用（Redis 不可用或请求没带会话号）</div>');
+  const used = st.messages_used || [];
+  const dropped = st.messages_total - used.length;
+  const firstIntent = used.length - st.intent_window;   // 从这一条开始，意图识别也能看到
+  const list = used.map((m, i) => `<div class="mem-item ${i < firstIntent ? "dim" : ""}"><span class="role">${esc(m.role)}${i >= firstIntent ? " · 意图可见" : ""}</span>${esc(m.content)}</div>`).join("");
+  return section("短期记忆（本次会话）", `<div class="small muted">Redis 中 ${st.messages_total} 条，按字符预算带上 ${used.length} 条${dropped > 0 ? `，舍弃较早的 ${dropped} 条` : ""}；意图识别只看最近 ${st.intent_window} 条</div>
+    ${st.summary ? `<div class="mem-item"><span class="role">摘要</span>${esc(st.summary)}</div>` : ""}
+    ${list || '<div class="muted small" style="margin-top:6px">这是会话的第一轮，没有历史</div>'}`);
+}
+
+function longTermDetail(r, s) {
+  // 超时、出错和"真没有"返回的都是空列表，只能靠 status 区分
+  const notes = {
+    timeout: `<span class="tag bad">超时</span> 召回用了 ${ms(s.duration_ms)}，超过时限，本轮没有用上长期记忆`,
+    error: '<span class="tag bad">出错</span> 召回失败，本轮没有用上长期记忆，详见服务日志',
+    miss: '<span class="muted">没有想起相关的以往会话</span>',
+  };
+  const html = r.memories_used.length ? r.memories_used.map((m) => `<div class="mem-item">${esc(m)}</div>`).join("")
+    : `<div class="small">${notes[s.status] || notes.miss}</div>`;
+  return section("长期记忆（以往会话）", html);
+}
+
+function memorySaveDetail() {
+  return '<div class="small muted">把本轮的问答追加到 Redis。长期记忆的更新和对话压缩在后台执行，不计入本轮耗时。</div>';
+}
+
+function intentDetail(r) {
+  const ents = Object.entries(r.entities || {}).filter(([, v]) => v && v.length).map(([k, v]) => `${k}=${v.join("/")}`).join(" ");
+  const info = kv([["意图", r.intent], ["业务域", r.intent_group], ["置信度", (r.intent_confidence * 100).toFixed(0) + "%"],
+    ["来源", r.intent_source], ["紧急度", r.urgency], ["抽取实体", ents || "—"]]);
+  const bars = Object.entries(r.routing_scores || {}).sort((a, b) => b[1] - a[1]).map(([name, v]) => {
     const cls = name === r.primary_agent ? "primary" : r.supporting_agents.includes(name) ? "support" : "";
     const role = cls === "primary" ? " 主" : cls === "support" ? " 辅" : "";
     return `<div class="score ${cls}"><span class="mono">${esc(name)}${role}</span>
       <div class="track"><div class="fill" style="width:${Math.min(v, 1) * 100}%"></div></div><span class="mono">${v.toFixed(2)}</span></div>`;
   }).join("");
-  return `<div class="card"><h2>路由</h2>${bars || '<div class="muted small">本轮没有打分（反问或升级）</div>'}
-    <div class="small muted" style="margin-top:8px">${esc(r.routing_reason)}</div></div>`;
+  return section("意图识别结果", info)
+    + section("路由决策", `<div class="small muted">路由是纯计算，紧接在意图识别之后，耗时可以忽略，所以不单独成行。动作：${esc(r.action)}</div>
+      ${bars || '<div class="muted small">本轮没有打分（反问或升级）</div>'}
+      <div class="small muted" style="margin-top:6px">${esc(r.routing_reason)}</div>`);
 }
 
-function toolsCard(r) {
-  if (!r.tool_traces.length) return '<div class="card"><h2>工具调用</h2><div class="muted small">本轮没有调用工具</div></div>';
-  const items = r.tool_traces.map((t) => {
-    const status = t.success ? '<span class="tag ok">成功</span>' : '<span class="tag bad">失败</span>';
-    const refused = t.success && t.data && t.data.found === false ? '<span class="tag warn">未找到 / 被拒绝</span>' : "";
-    const body = t.tool === "search_knowledge_base" && t.success && t.data.found ? kbDetail(t) : `<pre>${json(t.success ? t.data : t.error)}</pre>`;
-    return `<details class="${t.success ? "" : "fail"}"><summary>
-        <span class="tag">${esc(t.agent)}</span><b class="mono">${esc(t.tool)}</b>
-        <span class="mono small muted">${esc(JSON.stringify(t.args))}</span>${status}${refused}
-        <span class="grow"></span><span class="mono small muted">${ms(t.latency_ms)}</span></summary>${body}</details>`;
-  }).join("");
-  return `<div class="card"><h2>工具调用（${r.tool_traces.length}）</h2>${items}</div>`;
+function agentDetail(r, spans, s) {
+  const name = s.name.slice("agent:".length);
+  const role = s.fallback ? "兜底（主 Agent 失败后接手）" : name === r.primary_agent ? "主 Agent" : r.supporting_agents.includes(name) ? "辅助 Agent" : "—";
+  const score = r.routing_scores && r.routing_scores[name] !== undefined ? r.routing_scores[name].toFixed(2) : "—";
+  const inside = (x) => x.start_ms >= s.start_ms && x.start_ms + x.duration_ms <= s.start_ms + s.duration_ms + 1;
+  const rounds = spans.filter((x) => x.name === "llm:" + name && inside(x));
+  const tools = spans.filter((x) => x.name.startsWith("tool:") && x.agent === name && inside(x));
+  const llmMs = rounds.reduce((a, x) => a + x.duration_ms, 0), toolMs = tools.reduce((a, x) => a + x.duration_ms, 0);
+  const steps = [...rounds, ...tools].sort((a, b) => a.start_ms - b.start_ms).map((x) => `<tr class="link" data-goto="${spans.indexOf(x)}">
+      <td class="mono">${esc(spanLabel(x))}</td><td class="num">${x.completion_tokens !== undefined ? x.completion_tokens + " tok" : ""}</td><td class="num">${ms(x.duration_ms)}</td></tr>`).join("");
+  return section("Agent", kv([["角色", role], ["路由得分", score], ["是否产出回复", r.agents_used.includes(name) ? "是" : "否"],
+      ["模型调用", `${rounds.length} 轮，${ms(llmMs)}`], ["工具调用", `${tools.length} 次，${ms(toolMs)}`]]))
+    + section("执行步骤（点击跳转）", `<table>${steps || '<tr><td class="muted">没有记录到步骤</td></tr>'}</table>`);
+}
+
+function llmDetail(s) {
+  const next = s.requested === "answer" ? "直接作答" : Array.isArray(s.requested) ? "要求调用工具：" + s.requested.join(", ") : "—";
+  const cells = [["结果", next], ["轮次", `第 ${s.round} 轮`], ["模型", s.model || "—"]];
+  if (s.completion_tokens !== undefined) {
+    cells.push(["输入 token", s.prompt_tokens], ["输出 token", s.completion_tokens],
+      ["输出速度", (s.completion_tokens / Math.max(s.duration_ms / 1000, 0.001)).toFixed(0) + " token/s（按整次调用耗时估算）"]);
+  }
+  return section("模型调用", kv(cells) + (s.completion_tokens === undefined ? '<div class="small muted" style="margin-top:6px">接口没有返回 token 用量</div>' : ""));
+}
+
+// 通过 call_id 找到这一步对应的工具调用记录
+function traceFor(r, spans, s) {
+  if (s.call_id) return r.tool_traces.find((t) => t.call_id === s.call_id);
+  const same = spans.filter((x) => x.name === s.name);   // 没有 call_id 的旧数据：按同名工具的先后顺序对应
+  return r.tool_traces.filter((t) => "tool:" + t.tool === s.name)[same.indexOf(s)];
+}
+
+function toolDetail(r, spans, s) {
+  const t = traceFor(r, spans, s);
+  if (!t) return '<div class="muted small">找不到这次调用的记录</div>';
+  const status = t.success ? '<span class="tag ok">成功</span>' : '<span class="tag bad">失败</span>';
+  const refused = t.success && t.data && t.data.found === false ? ' <span class="tag warn">未找到 / 被拒绝</span>' : "";
+  const result = t.tool === "search_knowledge_base" && t.success && t.data.found ? kbDetail(t)
+    : `<pre>${json(t.success ? t.data : t.error)}</pre>`;
+  return section("调用", `<div class="small">${status}${refused} <span class="tag">${esc(t.agent)}</span></div>`)
+    + section("参数", `<pre>${json(t.args)}</pre>`) + section(t.success ? "返回给模型的结果" : "错误", result);
+}
+
+// kb:recall 和 kb:rerank 属于某一次知识库工具调用，按时间包含关系找到它
+function kbSpanDetail(r, spans, s) {
+  const parent = spans.find((x) => x.name === "tool:search_knowledge_base"
+    && x.start_ms <= s.start_ms && x.start_ms + x.duration_ms >= s.start_ms + s.duration_ms - 1);
+  const t = parent && traceFor(r, spans, parent);
+  const d = (t && t.debug) || {};
+  let note = "";
+  if (s.name === "kb:rewrite") note = `把用户问题改写成规范的检索语句，与原问题一起召回。改写结果：${(d.queries || []).slice(1).map(esc).join(" ｜ ") || "无"}`;
+  if (s.name === "kb:recall") note = `用 ${s.queries ?? "?"} 条查询并行做向量召回，合并去重后得到 ${d.n_candidates ?? "?"} 个候选。`;
+  if (s.name === "kb:rerank") note = d.reranked === false
+    ? `<span class="tag bad">未生效</span> 重排失败或超时，退回向量顺序。`
+    : `用 ${esc(s.backend || "?")} 判断 ${s.candidates ?? "?"} 个候选能否回答问题，按结果重新排序。`;
+  return `<div class="small">${note}</div>` + (t && t.success && t.data.found ? section("最终命中的片段", kbDetail(t)) : "");
+}
+
+function composeDetail(r, s) {
+  if ((s.agents ?? 0) <= 1) return '<div class="small muted">只有一个有效回复，直接使用，没有调用模型。</div>';
+  return section("合并后的回复", `<pre>${esc(r.response)}</pre>`);
 }
 
 // 知识库检索：列出命中的片段，并对比重排前后的名次
@@ -315,35 +472,6 @@ function kbDetail(t) {
   ].filter(Boolean).join(" · ");
   return `<div class="small muted" style="margin-top:8px">${meta}</div>
     <table><tr><th class="num">最终</th><th class="num">向量名次</th><th>片段</th><th class="num">相似度</th></tr>${rows}</table>`;
-}
-
-function memoryCard(r) {
-  const st = r.short_term || {};
-  let shortHtml;
-  if (!st.enabled) {
-    shortHtml = '<div class="muted small">未启用（Redis 不可用或请求没带会话号）</div>';
-  } else {
-    const used = st.messages_used || [];
-    const dropped = st.messages_total - used.length;
-    const firstIntent = used.length - st.intent_window;   // 从这一条开始，意图识别也能看到
-    const list = used.map((m, i) => `<div class="mem-item ${i < firstIntent ? "dim" : ""}"><span class="role">${esc(m.role)}${i >= firstIntent ? " · 意图可见" : ""}</span>${esc(m.content)}</div>`).join("");
-    shortHtml = `<div class="small muted">Redis 中 ${st.messages_total} 条，按字符预算带上 ${used.length} 条${dropped > 0 ? `，舍弃较早的 ${dropped} 条` : ""}；意图识别只看最近 ${st.intent_window} 条</div>
-      ${st.summary ? `<div class="mem-item"><span class="role">摘要</span>${esc(st.summary)}</div>` : ""}
-      ${list || '<div class="muted small" style="margin-top:6px">这是会话的第一轮，没有历史</div>'}`;
-  }
-  // 召回结果看时间线上 memory_recall 的 status：超时、出错和"真没有"返回的都是空列表
-  const recall = r.timeline.find((s) => s.name === "memory_recall");
-  const recallNote = {
-    timeout: `<span class="tag bad">超时</span> 召回用了 ${recall ? ms(recall.duration_ms) : "?"}，超过时限，本轮没有用上长期记忆`,
-    error: '<span class="tag bad">出错</span> 召回失败，本轮没有用上长期记忆，详见服务日志',
-    miss: "没有想起相关的以往会话",
-  };
-  let longHtml;
-  if (r.memories_used.length) longHtml = r.memories_used.map((m) => `<div class="mem-item">${esc(m)}</div>`).join("");
-  else if (!recall) longHtml = '<div class="muted small">未启用（长期记忆不可用或请求没带会话号）</div>';
-  else longHtml = `<div class="small ${recall.status === "miss" ? "muted" : ""}">${recallNote[recall.status] || recallNote.miss}</div>`;
-  return `<div class="card"><h2>短期记忆（本次会话）</h2>${shortHtml}</div>
-    <div class="card"><h2>长期记忆（以往会话）</h2>${longHtml}</div>`;
 }
 
 // ── 运行统计 ──────────────────────────────────────────────────────────
@@ -380,7 +508,22 @@ $("#input").addEventListener("keydown", (e) => {
 $("#msgs").addEventListener("click", (e) => {
   const el = e.target.closest(".msg.bot[data-i]");
   if (!el) return;
-  state.selected = Number(el.dataset.i); renderMessages(); renderInspector();
+  state.selected = Number(el.dataset.i); state.span = null; renderMessages(); renderInspector();
+});
+// 瀑布图的行和 Agent 详情里的步骤都可以点；再点一次已选中的行则收起详情
+function pickSpan(i) {
+  state.span = state.span === i ? null : i;
+  renderInspector();
+  const card = document.querySelector("#inspector .wf-row.selected");
+  if (card) card.focus({ preventScroll: true });
+}
+$("#inspector").addEventListener("click", (e) => {
+  const row = e.target.closest(".wf-row[data-span], tr.link[data-goto]");
+  if (row) pickSpan(Number(row.dataset.span ?? row.dataset.goto));
+});
+$("#inspector").addEventListener("keydown", (e) => {
+  const row = e.target.closest(".wf-row[data-span]");
+  if (row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickSpan(Number(row.dataset.span)); }
 });
 $("#new-conv").onclick = resetConversation;
 $("#user").onchange = resetConversation;   // 换用户必须换会话，会话记录按用户隔离

@@ -221,7 +221,8 @@ class Orchestrator:
         if replies[0].success or decision.primary == "general":
             return replies
         logger.warning("%s agent 失败，降级到 general", decision.primary)
-        fallback = await self._agents["general"].run(message, ctx, background, history)
+        async with tracer.span("agent:general", fallback=True):
+            fallback = await self._agents["general"].run(message, ctx, background, history)
         return [fallback] + replies[1:]
 
     async def _compose(self, message: str, replies: list[AgentReply]) -> str:

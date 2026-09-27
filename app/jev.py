@@ -13,6 +13,7 @@ import httpx
 
 from app.config import Settings
 from app.llm import connection_limits
+from app.observability import tracer
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,9 @@ class JevClient:
         """一次请求问多道题，返回 {题目 id: 答案}。所有题目在服务端并行作答，多问几道几乎不增加延迟。"""
         resp = await self._http.post("/systemone", json={"model": self.model, "state": state, "questions": questions})
         resp.raise_for_status()   # 4xx/5xx 抛 HTTPStatusError，由调用方决定怎么兜底
-        return resp.json()["answers"]
+        data = resp.json()
+        tracer.append("raw_output", data)   # 原样记下，包括每道题的概率和置信度，调试面板里可以看
+        return data["answers"]
 
     async def warmup(self) -> bool:
         """启动时先发一道小题，把连接建好，顺便检查 key 和模型名是否可用。

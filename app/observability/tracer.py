@@ -7,6 +7,8 @@
 需要记录结果时用 as 拿到这一步的附加信息字典：
     async with trace.span("memory_recall") as meta:
         meta["status"] = "timeout"
+拿不到这个字典的深层代码（例如模型客户端）用 annotate，写到包住它的最内层那一步上：
+    trace.annotate(completion_tokens=95)
 并行的步骤会有重叠的时间段，
 所以时间线记的是每一步各自的耗时，而不是简单相加。
 
@@ -19,6 +21,10 @@ import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Any, Optional
+
+
+# 当前最内层那一步的附加信息字典，供 annotate 使用
+_innermost: contextvars.ContextVar[Optional[dict[str, Any]]] = contextvars.ContextVar("innermost_span", default=None)
 
 
 @dataclass
@@ -38,9 +44,11 @@ class Timeline:
     @asynccontextmanager
     async def span(self, name: str, **meta: Any):
         start = time.monotonic()
+        token = _innermost.set(meta)
         try:
             yield meta   # 调用方可以在执行过程中往里补充结果，例如 meta["status"] = "timeout"
-        finally:   # 出异常也要记录，否则失败的那一步恰好从时间线上消失
+        finally:
+            _innermost.reset(token)   # 出异常也要记录，否则失败的那一步恰好从时间线上消失
             self.spans.append(Span(name, round((start - self._t0) * 1000, 1),
                                    round((time.monotonic() - start) * 1000, 1), meta))
 
@@ -62,6 +70,20 @@ def start_timeline(request_id: str) -> Timeline:
 
 def current() -> Optional[Timeline]:
     return _current.get()
+
+
+def annotate(**meta: Any) -> None:
+    """给当前最内层的那一步补充信息。不在任何一步里时什么都不做。"""
+    target = _innermost.get()
+    if target is not None:
+        target.update(meta)
+
+
+def append(key: str, value: Any) -> None:
+    """往当前最内层那一步的某个列表里追加一项。同一步里可能有多次调用，用 annotate 会互相覆盖。"""
+    target = _innermost.get()
+    if target is not None:
+        target.setdefault(key, []).append(value)
 
 
 @asynccontextmanager

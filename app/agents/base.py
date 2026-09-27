@@ -148,11 +148,13 @@ class BaseAgent:
             # 最后一轮不再提供工具，逼模型用已有信息作答。
             # 如果在这里直接报错，前几轮已经查到的信息就全部浪费了。
             offer_tools = tool_defs if round_no < MAX_TOOL_ROUNDS else None
-            async with tracer.span(f"llm:{self.profile.name}", round=round_no + 1):
+            async with tracer.span(f"llm:{self.profile.name}", round=round_no + 1) as meta:
                 msg = await self._llm.chat(
                     messages, system=self.profile.system_prompt(), tools=offer_tools,
                     temperature=self.profile.temperature, max_tokens=self.profile.max_tokens,
                 )
+                # 这一轮模型做了什么：要求调用哪些工具，还是直接给出了回复
+                meta["requested"] = [c.function.name for c in msg.tool_calls] if msg.tool_calls else "answer"
             if not msg.tool_calls:
                 return self._clean_reply(msg.content or "")
 
@@ -164,8 +166,10 @@ class BaseAgent:
                                for c in msg.tool_calls],
             })
             for call in msg.tool_calls:
-                async with tracer.span(f"tool:{call.function.name}"):
+                # call_id 同时记在时间线和 trace 上，调试面板靠它把两者对应起来
+                async with tracer.span(f"tool:{call.function.name}", agent=self.profile.name, call_id=call.id):
                     trace = await execute_tool_call(self._tools, call.function.name, call.function.arguments, ctx)
+                trace["call_id"] = call.id
                 stats.record("tool", call.function.name, trace["latency_ms"], trace["success"])
                 traces.append(trace)
                 # 失败也要告诉模型，它才能换个办法或如实告知用户

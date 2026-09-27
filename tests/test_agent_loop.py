@@ -79,3 +79,15 @@ def test_fabricated_system_note_is_stripped_from_reply():
     assert clean("请提供订单号。\n\n[系统提示] 本轮已调用工具，已拿到查询结果。请") == "请提供订单号。"
     assert clean("已为您查到。 [System] hidden") == "已为您查到。"
     assert clean("正常回复，中间有 [订单号] 这种方括号不受影响") == "正常回复，中间有 [订单号] 这种方括号不受影响"
+
+
+async def test_timeline_links_each_tool_call_to_its_trace():
+    # 调试面板点击 tool:... 那一行时，靠 call_id 找到对应的 trace
+    from app.observability import tracer
+    tl = tracer.start_timeline("r")
+    llm = ScriptedLLM(tool_msg("get_order_status", '{"order_id": "A12345"}', call_id="call_9"), text_msg("运输中"))
+    reply = await BaseAgent(llm, PROFILE).run("订单 A12345 到哪了", CTX)
+    spans = {s["name"] + str(s.get("round", "")): s for s in tl.summary()}
+    assert spans["tool:get_order_status"]["call_id"] == reply.tool_traces[0]["call_id"] == "call_9"
+    assert spans["tool:get_order_status"]["agent"] == "general"
+    assert spans["llm:general1"]["requested"] == ["get_order_status"] and spans["llm:general2"]["requested"] == "answer"

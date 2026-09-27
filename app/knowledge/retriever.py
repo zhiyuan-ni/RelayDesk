@@ -143,7 +143,10 @@ class Retriever:
         return [r for r in results if not isinstance(r, BaseException)], queries
 
     async def _rewrite_then_recall(self, query: str) -> tuple[list[list[dict]], list[str]]:
-        variants = await self._rewrite(query) if self._rewrite_on else []
+        if not self._rewrite_on:
+            return await self._recall([])
+        async with tracer.span("kb:rewrite"):
+            variants = await self._rewrite(query)
         return await self._recall(variants)
 
     async def _rewrite(self, query: str) -> list[str]:

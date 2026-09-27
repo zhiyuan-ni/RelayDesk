@@ -175,3 +175,14 @@ async def test_open_jev_only_when_some_step_uses_it(monkeypatch):
     client = await open_jev(cfg(rerank_backend="jev"))
     assert isinstance(client, JevClient) and warmed == ["jev-1.13"]
     await client.aclose()
+
+
+async def test_client_keeps_the_raw_response_on_the_timeline():
+    from app.observability import tracer
+    body = {"model": "jev-1.13.0", "answers": {"intent": choice("invoice", 0.9)}}
+    client = JevClient(cfg(), transport=httpx.MockTransport(lambda req: httpx.Response(200, json=body)))
+    tl = tracer.start_timeline("r")
+    async with tracer.span("intent"):
+        await client.ask({"最新消息": "开票"}, {"intent": build_question()})
+    await client.aclose()
+    assert tl.summary()[0]["raw_output"] == [body]
