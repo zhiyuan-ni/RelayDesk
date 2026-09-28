@@ -91,3 +91,14 @@ async def test_timeline_links_each_tool_call_to_its_trace():
     assert spans["tool:get_order_status"]["call_id"] == reply.tool_traces[0]["call_id"] == "call_9"
     assert spans["tool:get_order_status"]["agent"] == "general"
     assert spans["llm:general1"]["requested"] == ["get_order_status"] and spans["llm:general2"]["requested"] == "answer"
+
+
+async def test_text_written_alongside_a_tool_call_is_not_kept_in_history():
+    # 调工具那一轮的正文用户看不到。留在历史里，模型会以为已经说过，最终回复就可能漏掉
+    msg = NS(content="⚠️ 安全提醒：发现异地登录。我先查一下订单。",
+             tool_calls=[NS(id="c1", function=NS(name="get_order_status", arguments='{"order_id": "A12345"}'))])
+    llm = ScriptedLLM(msg, text_msg("您的订单正在运输中。"))
+    await BaseAgent(llm, PROFILE).run("订单 A12345 到哪了", CTX)
+    assistant = llm.requests[1]["messages"][1]
+    assert assistant["role"] == "assistant" and assistant["content"] == "" and assistant["tool_calls"]
+

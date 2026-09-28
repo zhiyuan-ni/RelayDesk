@@ -158,9 +158,14 @@ class BaseAgent:
             if not msg.tool_calls:
                 return self._clean_reply(msg.content or "")
 
-            # 先把"模型的调用请求"原样记入对话，再逐个追加工具结果，顺序不能反
+            # 先把"模型的调用请求"记入对话，再逐个追加工具结果，顺序不能反。
+            # 正文刻意留空：调工具这一轮写的文字不会交给用户，只有最后一轮的回复会。
+            # 留在历史里的话，模型会以为已经跟用户说过了，下一轮就不再重复。
+            # 实测出现过：technical 在调工具那一轮写了一段安全提醒，这段话用户根本看不到。
+            # 试过在提示词里要求"调工具时不输出文字"，前后各约 40 轮对比没有效果，所以只能在这里兜住。
+            # 原文仍记在时间线的 raw_output 里，调试面板可以查看
             messages.append({
-                "role": "assistant", "content": msg.content or "",
+                "role": "assistant", "content": "",
                 "tool_calls": [{"id": c.id, "type": "function",
                                 "function": {"name": c.function.name, "arguments": c.function.arguments}}
                                for c in msg.tool_calls],
