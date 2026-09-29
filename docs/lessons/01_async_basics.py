@@ -1,6 +1,6 @@
 """异步入门：10 分钟看懂 async / await / gather。
 
-运行：uv run python lessons/01_async_basics.py
+运行：uv run python docs/lessons/01_async_basics.py
 
 核心直觉
 --------

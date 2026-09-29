@@ -1,6 +1,6 @@
 """看清 tool-use 的一来一回。
 
-运行：uv run python lessons/02_tool_use_demo.py
+运行：uv run python docs/lessons/02_tool_use_demo.py
 
 tool-use 的本质
 ---------------
@@ -18,9 +18,9 @@ import json
 import sys
 from pathlib import Path
 
-# 本文件在 lessons/ 目录下，Python 默认只在这个目录里找模块。
+# 本文件在 docs/lessons/ 目录下，Python 默认只在这个目录里找模块。
 # 把项目根目录加进搜索路径，才能 import app。
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.business import store  # noqa: E402
 from app.config import settings

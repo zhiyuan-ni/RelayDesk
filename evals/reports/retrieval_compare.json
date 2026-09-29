@@ -1,0 +1,473 @@
+{
+  "generated_at": "2026-09-28T21:17:30",
+  "embedding_model": "text-embedding-v4",
+  "rerank_model": "qwen-turbo",
+  "rewrite_model": "qwen3.8-flash",
+  "jev_model": "jev-1.13",
+  "chunks": 40,
+  "n_cases": 15,
+  "n_runs": 3,
+  "cases": [
+    {
+      "query": "换手机了验证器登不上",
+      "expected": "两步验证"
+    },
+    {
+      "query": "快递显示签收了但我没拿到",
+      "expected": "物流异常处理"
+    },
+    {
+      "query": "开会员后悔了能退吗",
+      "expected": "年度会员的退订"
+    },
+    {
+      "query": "银行短信说扣了两笔，你们这边查只有一笔",
+      "expected": "重复扣款处理"
+    },
+    {
+      "query": "付款的时候页面卡死了，我要不要再付一次",
+      "expected": "支付页面异常"
+    },
+    {
+      "query": "买了三样东西只想退一样，券怎么算",
+      "expected": "部分退款与优惠分摊"
+    },
+    {
+      "query": "钱退到信用卡要多久",
+      "expected": "退款流程与时效"
+    },
+    {
+      "query": "公司财务说要专票，需要给你们什么资料",
+      "expected": "发票类型"
+    },
+    {
+      "query": "发票上的公司名字写错了",
+      "expected": "抬头和信息修改"
+    },
+    {
+      "query": "半夜收到短信说有人在国外登我的号",
+      "expected": "异常登录提醒"
+    },
+    {
+      "query": "有人打电话说是你们客服，让我报验证码",
+      "expected": "防范诈骗"
+    },
+    {
+      "query": "包裹寄出去了才发现地址填错了",
+      "expected": "修改地址与拦截"
+    },
+    {
+      "query": "衣服买小了想换大一号",
+      "expected": "换货"
+    },
+    {
+      "query": "耳机用了半年一边没声音了，能修吗",
+      "expected": "保修与维修"
+    },
+    {
+      "query": "盒子里少了一根充电线",
+      "expected": "少件、错发与补发"
+    }
+  ],
+  "summary": [
+    {
+      "mode": "纯向量",
+      "runs": 3,
+      "hit1_min": 0.7333,
+      "hit1_max": 0.7333,
+      "hit1_mean": 0.7333,
+      "hit3_min": 1.0,
+      "hit3_max": 1.0,
+      "avg_ms_mean": 1034,
+      "rerank_fallbacks_total": 0
+    },
+    {
+      "mode": "向量+重排",
+      "runs": 3,
+      "hit1_min": 0.8667,
+      "hit1_max": 1.0,
+      "hit1_mean": 0.9556,
+      "hit3_min": 1.0,
+      "hit3_max": 1.0,
+      "avg_ms_mean": 1967,
+      "rerank_fallbacks_total": 2
+    },
+    {
+      "mode": "向量+jev重排",
+      "runs": 3,
+      "hit1_min": 0.7333,
+      "hit1_max": 1.0,
+      "hit1_mean": 0.8667,
+      "hit3_min": 1.0,
+      "hit3_max": 1.0,
+      "avg_ms_mean": 2937,
+      "rerank_fallbacks_total": 17
+    },
+    {
+      "mode": "改写+向量+重排",
+      "runs": 3,
+      "hit1_min": 1.0,
+      "hit1_max": 1.0,
+      "hit1_mean": 1.0,
+      "hit3_min": 1.0,
+      "hit3_max": 1.0,
+      "avg_ms_mean": 5364,
+      "rerank_fallbacks_total": 0
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "results": [
+        {
+          "mode": "纯向量",
+          "hit1": 11,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.7333,
+          "hit3_rate": 1.0,
+          "avg_ms": 1280,
+          "rerank_fallbacks": null,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "快递显示签收了但我没拿到",
+              "expected": "物流异常处理",
+              "top3": [
+                "签收与代收",
+                "物流异常处理",
+                "物流查询"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "银行短信说扣了两笔，你们这边查只有一笔",
+              "expected": "重复扣款处理",
+              "top3": [
+                "支付页面异常",
+                "重复扣款处理",
+                "收不到短信验证码"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "盒子里少了一根充电线",
+              "expected": "少件、错发与补发",
+              "top3": [
+                "保修与维修",
+                "少件、错发与补发",
+                "物流异常处理"
+              ],
+              "rerank_fallback": false
+            }
+          ]
+        },
+        {
+          "mode": "向量+重排",
+          "hit1": 13,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.8667,
+          "hit3_rate": 1.0,
+          "avg_ms": 2427,
+          "rerank_fallbacks": 2,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": true
+            },
+            {
+              "query": "快递显示签收了但我没拿到",
+              "expected": "物流异常处理",
+              "top3": [
+                "签收与代收",
+                "物流异常处理",
+                "物流查询"
+              ],
+              "rerank_fallback": true
+            }
+          ]
+        },
+        {
+          "mode": "向量+jev重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 2735,
+          "rerank_fallbacks": 5,
+          "misses": []
+        },
+        {
+          "mode": "改写+向量+重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 4504,
+          "rerank_fallbacks": 0,
+          "misses": []
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "results": [
+        {
+          "mode": "纯向量",
+          "hit1": 11,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.7333,
+          "hit3_rate": 1.0,
+          "avg_ms": 894,
+          "rerank_fallbacks": null,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "快递显示签收了但我没拿到",
+              "expected": "物流异常处理",
+              "top3": [
+                "签收与代收",
+                "物流异常处理",
+                "物流查询"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "银行短信说扣了两笔，你们这边查只有一笔",
+              "expected": "重复扣款处理",
+              "top3": [
+                "支付页面异常",
+                "重复扣款处理",
+                "收不到短信验证码"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "盒子里少了一根充电线",
+              "expected": "少件、错发与补发",
+              "top3": [
+                "保修与维修",
+                "少件、错发与补发",
+                "物流异常处理"
+              ],
+              "rerank_fallback": false
+            }
+          ]
+        },
+        {
+          "mode": "向量+重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 1728,
+          "rerank_fallbacks": 0,
+          "misses": []
+        },
+        {
+          "mode": "向量+jev重排",
+          "hit1": 11,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.7333,
+          "hit3_rate": 1.0,
+          "avg_ms": 3349,
+          "rerank_fallbacks": 7,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": true
+            },
+            {
+              "query": "快递显示签收了但我没拿到",
+              "expected": "物流异常处理",
+              "top3": [
+                "签收与代收",
+                "物流异常处理",
+                "物流查询"
+              ],
+              "rerank_fallback": true
+            },
+            {
+              "query": "银行短信说扣了两笔，你们这边查只有一笔",
+              "expected": "重复扣款处理",
+              "top3": [
+                "支付页面异常",
+                "重复扣款处理",
+                "收不到短信验证码"
+              ],
+              "rerank_fallback": true
+            },
+            {
+              "query": "半夜收到短信说有人在国外登我的号",
+              "expected": "异常登录提醒",
+              "top3": [
+                "账号疑似被盗的处理",
+                "异常登录提醒",
+                "防范诈骗"
+              ],
+              "rerank_fallback": false
+            }
+          ]
+        },
+        {
+          "mode": "改写+向量+重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 6048,
+          "rerank_fallbacks": 0,
+          "misses": []
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "results": [
+        {
+          "mode": "纯向量",
+          "hit1": 11,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.7333,
+          "hit3_rate": 1.0,
+          "avg_ms": 929,
+          "rerank_fallbacks": null,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "快递显示签收了但我没拿到",
+              "expected": "物流异常处理",
+              "top3": [
+                "签收与代收",
+                "物流异常处理",
+                "物流查询"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "银行短信说扣了两笔，你们这边查只有一笔",
+              "expected": "重复扣款处理",
+              "top3": [
+                "支付页面异常",
+                "重复扣款处理",
+                "收不到短信验证码"
+              ],
+              "rerank_fallback": false
+            },
+            {
+              "query": "盒子里少了一根充电线",
+              "expected": "少件、错发与补发",
+              "top3": [
+                "保修与维修",
+                "少件、错发与补发",
+                "物流异常处理"
+              ],
+              "rerank_fallback": false
+            }
+          ]
+        },
+        {
+          "mode": "向量+重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 1747,
+          "rerank_fallbacks": 0,
+          "misses": []
+        },
+        {
+          "mode": "向量+jev重排",
+          "hit1": 13,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 0.8667,
+          "hit3_rate": 1.0,
+          "avg_ms": 2728,
+          "rerank_fallbacks": 5,
+          "misses": [
+            {
+              "query": "换手机了验证器登不上",
+              "expected": "两步验证",
+              "top3": [
+                "收不到短信验证码",
+                "两步验证",
+                "修改绑定手机和邮箱"
+              ],
+              "rerank_fallback": true
+            },
+            {
+              "query": "半夜收到短信说有人在国外登我的号",
+              "expected": "异常登录提醒",
+              "top3": [
+                "账号疑似被盗的处理",
+                "异常登录提醒",
+                "防范诈骗"
+              ],
+              "rerank_fallback": false
+            }
+          ]
+        },
+        {
+          "mode": "改写+向量+重排",
+          "hit1": 15,
+          "hit3": 15,
+          "n": 15,
+          "hit1_rate": 1.0,
+          "hit3_rate": 1.0,
+          "avg_ms": 5539,
+          "rerank_fallbacks": 0,
+          "misses": []
+        }
+      ]
+    }
+  ]
+}
